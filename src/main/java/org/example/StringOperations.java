@@ -85,4 +85,18 @@ public class StringOperations {
         return index;
     }
 
+    public static int checkLineComment(String line){
+        if(line == null) return -1;
+        return checkForSequence(line, "//");
+    }
+
+    public static int checkBlockComment(String line) {
+        if(line == null) return -1;
+        return checkForSequence(line, "/*");
+    }
+    public static int checkBlockCommentEnd(String line) {
+        if(line == null) return -1;
+        return checkForSequence(line, "*/");
+    }
+
 }

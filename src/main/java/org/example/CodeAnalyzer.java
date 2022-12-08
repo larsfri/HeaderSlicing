@@ -33,6 +33,7 @@ public class CodeAnalyzer {
             case 2:
                 //check comment
                 //find macros & replace them
+                processCodeLine(this.line);
                 return 2;
             default:
                 System.out.println("Unexpected Type for Line");
@@ -48,7 +49,7 @@ public class CodeAnalyzer {
        1 pre-processor code
        2 normal code
         */
-    private int checkType() {
+    public int checkType() {
 
         if(line == null) return -1;
         if(line.equals("")) return 0;
@@ -56,5 +57,34 @@ public class CodeAnalyzer {
         if(StringOperations.trimSpaces(line).equals("")) return 0;
 
         return 2;
+    }
+
+    public String processCodeLine(String code){
+        if (code.length() == 0);
+        String result = code;
+        if(comment){
+            int commentEnd = StringOperations.checkBlockCommentEnd(code);
+            if(commentEnd >= 0){
+                comment = false;
+                return result.substring(0, commentEnd+2) + processCodeLine(code.substring(commentEnd+2));
+            }
+        }
+        int lineComment = StringOperations.checkLineComment(code);
+        if(lineComment >=0){
+            code = code.substring(0, lineComment);
+            return processCodeLine(code) + result.substring(lineComment);
+        }
+        int blockComment = StringOperations.checkBlockComment(code);
+        if(blockComment >= 0){
+            comment = true;
+            return processCodeLine(code);
+        }
+        return checkForMacros(code);
+
+    }
+
+    private String checkForMacros(String code) {
+        //ToDo
+        return null;
     }
 }

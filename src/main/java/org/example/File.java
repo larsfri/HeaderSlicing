@@ -31,17 +31,20 @@ public class File {
         if(dataLines != null){
          for(int i = 0; i < dataLines.size() -1; i++) {
              String line = dataLines.get(i);
-             char lastChar = line.charAt(line.length()-1);
-             if(lastChar == '\\'){
-                 String merge = line + dataLines.get(i+1);
-                 dataLines.set(i, merge);
-                 dataLines.remove(i+1);
-                 i--;
+             if (line.length() > 0) {
+                 char lastChar = line.charAt(line.length() - 1);
+                 if (lastChar == '\\') {
+                     String merge = line + dataLines.get(i + 1);
+                     dataLines.set(i, merge);
+                     dataLines.remove(i + 1);
+                     i--;
+                 }
              }
          }
         }
     }
 
+    public int getLineIndex(){return lineIndex;}
     public String getPath(){
         return path;
     }

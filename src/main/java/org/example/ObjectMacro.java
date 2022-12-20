@@ -1,21 +1,18 @@
 package org.example;
 
-public class ObjectMacro {
-    private String name;
+public class ObjectMacro extends Macro{
     private String body;
 
     public ObjectMacro(String name, String definition){
-        this.name = name;
+        super(name);
         this.body = definition;
     }
 
-    public String getBody(){
+    public String getBody(String s){
         return body;
     }
 
-    public String getName(){
-        return name;
-    }
+    public int countArguments(){return 0;}
 
 
 

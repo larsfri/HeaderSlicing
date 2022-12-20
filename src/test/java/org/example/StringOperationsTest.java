@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StringOperationsTest {
-    String lineWithComment = "01234\"Comment\"bla";
-    String lineEscapeComment = "0123456\\\"9\"";
+    String lineWithString = "01234\"String\"bla";
+    String lineEscapeString = "0123456\\\"9\"";
     String emptyLine = "";
     String notDefined = null;
     String doubleEscape = "0123\\\\67";
@@ -14,10 +14,12 @@ class StringOperationsTest {
     String parenthesis = "()";
     String doubleParenthesis = "(())";
     String unclosedParenthesis = "((())";
+    String comment = "//Comment";
+    String blockComment = "/*Comment*/ code";
 
     @Test
     void checkSimpleString() {
-        int index = StringOperations.checkString(lineWithComment);
+        int index = StringOperations.checkString(lineWithString);
         assertEquals(5, index);
     }
 
@@ -29,13 +31,13 @@ class StringOperationsTest {
 
     @Test
     void checkStringWithEscape() {
-        int index = StringOperations.checkString(lineEscapeComment);
+        int index = StringOperations.checkString(lineEscapeString);
         assertEquals(10, index);
     }
 
     @Test
     void singleEscape() {
-        boolean esc = StringOperations.escapeChar(7, lineEscapeComment);
+        boolean esc = StringOperations.escapeChar(7, lineEscapeString);
         assertTrue(esc);
     }
     @Test
@@ -51,11 +53,15 @@ class StringOperationsTest {
 
     @Test
     void checkForSequence() {
-        //ToDo
+        int result = StringOperations.checkForSequence(lineWithString, "Comment");
+        assertEquals(6,6);
     }
 
     @Test
     void trimSpaces() {
+        String line = "   bla";
+        String result = StringOperations.trimSpaces(line);
+        assertEquals("bla", result);
     }
     @Test
     void checkParenthesis(){
@@ -71,5 +77,9 @@ class StringOperationsTest {
         int end = StringOperations.closeParenthesis(doubleParenthesis.substring(start+1), 0);
         assertEquals(0, start);
         assertEquals(2, end);
+    }
+    @Test
+    void checkCommentBegin(){
+
     }
 }

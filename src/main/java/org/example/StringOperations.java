@@ -98,5 +98,12 @@ public class StringOperations {
         if(line == null) return -1;
         return checkForSequence(line, "*/");
     }
+    //replace
+    public static String replaceString(String line, String toReplace, String replacement){
+        if(line == null || toReplace == null || replacement == null) return line;
+        int index = checkForSequence(line, toReplace);
+        if(index < 0) return line;
+        return line.substring(0, index) + replacement + replaceString(line.substring(index + toReplace.length()), toReplace, replacement);
+    }
 
 }

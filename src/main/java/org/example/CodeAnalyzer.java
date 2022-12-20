@@ -1,5 +1,7 @@
 package org.example;
 
+import java.util.ArrayList;
+
 public class CodeAnalyzer {
 
     private File file;
@@ -7,8 +9,15 @@ public class CodeAnalyzer {
     private String line;
     private int type;
     private boolean comment;
+    private MacroTable macroTable;
 
-    public CodeAnalyzer(String filename){
+
+    public CodeAnalyzer(String filename, MacroTable macroTable){
+        if(macroTable == null){
+            this.macroTable = new MacroTable();
+        }else{
+            this.macroTable = macroTable;
+        }
         this.filename = filename;
         file = new File(filename);
         line = file.getCurrentLine();
@@ -22,6 +31,9 @@ public class CodeAnalyzer {
         if(type == -1) return false;
         return true;
     }
+    public int getLineIndex(){
+        return file.getLineIndex();
+    }
 
     public int processLine(){
         switch(type){
@@ -29,6 +41,7 @@ public class CodeAnalyzer {
             case 0: return 0;
             case 1:
                 //analyze Preprocessing code
+                preprocessing();
                 return 1;
             case 2:
                 //check comment
@@ -41,6 +54,23 @@ public class CodeAnalyzer {
         }
     }
 
+    private void preprocessing() {
+        int space = line.indexOf(" ");
+        String operator = line.substring(0, space);
+        if(operator.equals("#define")){
+            String name = line.substring(space);
+            name = StringOperations.trimSpaces(name);
+            space = name.indexOf(" ");
+            String body = "";
+            String macro = name;
+            if(space != -1) {
+                macro = name.substring(0, space);
+                body = name.substring(space);
+                body = StringOperations.trimSpaces(body);
+            }
+            macroTable.addObjectMacro(macro, body);
+        }
+    }
 
 
     /*
@@ -85,6 +115,6 @@ public class CodeAnalyzer {
 
     private String checkForMacros(String code) {
         //ToDo
-        return null;
+        return "";
     }
 }

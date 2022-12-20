@@ -2,13 +2,12 @@ package org.example;
 
 import java.util.ArrayList;
 
-public class FunctionMacro {
-    private String name;
+public class FunctionMacro extends Macro{
     private String body;
     private String[] arguments;
 
     public FunctionMacro(String name, String definition, ArrayList<String> param){
-        this.name = name;
+        super(name);
         this.body = definition;
         if(param == null){
             arguments = new String[0];
@@ -20,19 +19,17 @@ public class FunctionMacro {
         }
     }
 
-    public FunctionMacro(String name, String definition) {
-        this.name = name;
-        this.body = definition;
-        this.arguments = new String[0];
+    @Override
+    public String getBody(String parameter) {
+        //ToDo
+        return null;
     }
+
     public int countArguments(){
         if(arguments == null) return 0;
         return arguments.length;
     }
 
-    public String getName(){
-        return name;
-    }
 
 
 }

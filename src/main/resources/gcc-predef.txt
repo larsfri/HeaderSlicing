@@ -346,4 +346,3 @@
 #define __UINT_FAST8_TYPE__ unsigned char
 #define __ATOMIC_ACQ_REL 4
 #define __ATOMIC_RELEASE 3
-#define TEST(X,Y) X und Y

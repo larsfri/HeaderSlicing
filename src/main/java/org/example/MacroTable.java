@@ -58,4 +58,8 @@ public class MacroTable {
         ObjectMacro macro = new ObjectMacro(name, body);
         macros.add(macro);
     }
+    public void addFunctionMacro(String name,String body, String[] parameter){
+        FunctionMacro macro = new FunctionMacro(name, body, parameter);
+        macros.add(macro);
+    }
 }

@@ -57,18 +57,42 @@ public class CodeAnalyzer {
     private void preprocessing() {
         int space = line.indexOf(" ");
         String operator = line.substring(0, space);
-        if(operator.equals("#define")){
-            String name = line.substring(space);
-            name = StringOperations.trimSpaces(name);
-            space = name.indexOf(" ");
-            String body = "";
-            String macro = name;
-            if(space != -1) {
-                macro = name.substring(0, space);
-                body = name.substring(space);
-                body = StringOperations.trimSpaces(body);
-            }
+        switch (operator){
+            case "#define": defineMacro(line.substring(space));
+        }
+    }
+
+    private void defineMacro(String name) {
+        name = StringOperations.trimSpaces(name);
+        int space = name.indexOf(" ");
+        String body = "";
+        String macro = name;
+        if(space == -1) {
             macroTable.addObjectMacro(macro, body);
+        }else{
+            macro = name.substring(0, space);
+            body = name.substring(space);
+            body = StringOperations.trimSpaces(body);
+            if(macro.indexOf("(") == -1){
+                macroTable.addObjectMacro(macro, body);
+            }else{
+                defineFunctionMacro(name);
+            }
+        }
+
+    }
+
+    private void defineFunctionMacro(String name) {
+        int open = StringOperations.openParenthesis((name));
+        int close = open + 1 + StringOperations.closeParenthesis(name.substring(open+1), 0);
+        if(close == -1 || close +2 > name.length()){
+            System.out.println("Unexpected macro declaration, ERROR");
+        }else {
+            String parameter = name.substring(open +1, close);
+            String body = name.substring(close + 1);
+            String[] param = parameter.split(",");
+            name = name.substring(0, open+1);
+            macroTable.addFunctionMacro(name, body, param);
         }
     }
 
@@ -90,7 +114,7 @@ public class CodeAnalyzer {
     }
 
     public String processCodeLine(String code){
-        if (code.length() == 0);
+        if (code.length() == 0) return code;
         String result = code;
         if(comment){
             int commentEnd = StringOperations.checkBlockCommentEnd(code);

@@ -6,23 +6,24 @@ public class FunctionMacro extends Macro{
     private String body;
     private String[] arguments;
 
-    public FunctionMacro(String name, String definition, ArrayList<String> param){
+    public FunctionMacro(String name, String definition, String[] param){
         super(name);
         this.body = definition;
         if(param == null){
             arguments = new String[0];
         }else {
-            arguments = new String[param.size()];
-            for (int i = 0; i < param.size(); i++) {
-                arguments[i] = param.get(i);
-            }
+            arguments = param;
         }
     }
 
     @Override
     public String getBody(String parameter) {
-        //ToDo
-        return null;
+        String[] param = parameter.split(",");
+        String result = body;
+        for (int i = 0; i < param.length; i++) {
+            body = StringOperations.replaceString(body, arguments[i], param[i]);
+        }
+        return body;
     }
 
     public int countArguments(){

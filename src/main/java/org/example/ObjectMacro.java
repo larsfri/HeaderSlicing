@@ -12,7 +12,7 @@ public class ObjectMacro extends Macro{
         return body;
     }
 
-    public int countArguments(){return 0;}
+    public int countArguments(){return -1;}
 
 
 

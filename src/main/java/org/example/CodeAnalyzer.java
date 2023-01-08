@@ -91,7 +91,7 @@ public class CodeAnalyzer {
             String parameter = name.substring(open +1, close);
             String body = name.substring(close + 1);
             String[] param = parameter.split(",");
-            name = name.substring(0, open+1);
+            name = name.substring(0, open);
             macroTable.addFunctionMacro(name, body, param);
         }
     }
@@ -133,12 +133,81 @@ public class CodeAnalyzer {
             comment = true;
             return processCodeLine(code);
         }
-        return checkForMacros(code);
+        return checkForStrings(code);
 
     }
 
+    private String checkForStrings(String code) {
+        int index = StringOperations.checkString(code);
+        if(index == -1) return checkForReplacements(code);
+        int end = index+1 + StringOperations.checkString(code.substring(index+1));
+
+        return checkForReplacements(code.substring(0, index)) + code.substring(index, end+1) + checkForStrings(code.substring(end+1));
+        
+    }
+
+    private String checkForReplacements(String code){
+        for(Macro m: macroTable.getMacros()){
+            if(code.contains(m.getName())){
+                if(m.countArguments() == -1){
+                    code = replaceObjectMacro(code, m);
+                }else{
+                    code = replaceFunctionMacro(code, m);
+                }
+
+                code = checkForMacros(code);
+                break;
+            }
+        }
+        return code;
+    }
+
+    private String replaceObjectMacro(String code, Macro m) {
+        String name = m.getName();
+        int index = code.indexOf(name);
+        char prev = StringOperations.previousChar(code, index);
+        char next = StringOperations.nextChar(code, index + name.length() -1);
+        if(prev == ' ' || prev == '(' || prev == ','){
+            if(next == ' ' || next == ')' || next == ','){
+                code = StringOperations.replaceString(code,name, m.getBody(""));
+            }
+        }
+        return code;
+    }
+
     private String checkForMacros(String code) {
-        //ToDo
-        return "";
+        if(code == "") return "";
+        String[] parts = code.split(" ");
+        String result = "";
+        for(String s: parts){
+            String res = s;
+            if(res.charAt(0) == '#') stringifyMacro(res);
+            if(StringOperations.openParenthesis(s) != -1){
+                res = checkFunctionMacro(s);
+            }else {
+                Macro m = macroTable.checkForMacro(s);
+                res = m.getBody("");
+            }
+            result = result +" " + res;
+        }
+
+        return result;
+    }
+
+    private String stringifyMacro(String res) {
+        String text = checkForMacros(res.substring(1));
+        if(text.equals(res.substring(1))) return res;
+        return "\"" + text + "\"";
+
+    }
+
+    private String checkFunctionMacro(String macro){
+        int open = StringOperations.openParenthesis(macro);
+        int close = open + 1 +StringOperations.closeParenthesis(line.substring(open+1), 0);
+        String parenthesis = macro.substring(open +1 , close);
+        String[] parts = parenthesis.split(",");
+        parenthesis = checkForMacros(parenthesis);
+
+
     }
 }

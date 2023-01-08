@@ -106,4 +106,22 @@ public class StringOperations {
         return line.substring(0, index) + replacement + replaceString(line.substring(index + toReplace.length()), toReplace, replacement);
     }
 
+    //retruns previous char, or ' ' if theres no previous char
+    public static char previousChar(String line, int index){
+        index --;
+        if(index >= 0 && index < line.length()){
+            return line.charAt(index);
+        }
+        return ' ';
+    }
+
+    //retruns next char, or ' ' if theres no further char
+    public static char nextChar(String line, int index){
+        index ++;
+        if(index >= 0 && index < line.length()){
+            return line.charAt(index);
+        }
+        return ' ';
+    }
+
 }

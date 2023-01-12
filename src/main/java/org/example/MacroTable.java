@@ -16,9 +16,6 @@ public class MacroTable {
     private void addPresetMacros() {
         //ToDO
         CodeAnalyzer analyzer = new CodeAnalyzer("src/main/resources/gcc-predef.txt", this);
-        do{
-            analyzer.processLine();
-        }while(analyzer.nextLine());
 
         macros.add(new ObjectMacro("__DATE__", getDate()));
         macros.add((new ObjectMacro("__TIME__", getTime())));
@@ -80,6 +77,9 @@ public class MacroTable {
             }
         }
         return null;
+    }
+    public void removeMacro(Macro m){
+        macros.remove(m);
     }
     public ArrayList<Macro> getMacros(){
         return macros;

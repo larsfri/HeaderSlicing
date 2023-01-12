@@ -13,7 +13,8 @@ public class Main {
         System.out.println("Hello world!");
         String filename = "src/main/resources/analyzer.h";
         CodeAnalyzer analyzer = new CodeAnalyzer(filename, null);
-        analyzer.getLineIndex();
+
+        analyzer.saveDataToFile("src/main/resources/analyzer_edit.h");
 
 
 

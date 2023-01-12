@@ -15,4 +15,9 @@ public class LineMacro extends Macro{
     public int countArguments() {
         return 0;
     }
+
+    @Override
+    public boolean checkHashtag() {
+        return false;
+    }
 }

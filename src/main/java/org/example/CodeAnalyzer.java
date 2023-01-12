@@ -23,6 +23,10 @@ public class CodeAnalyzer {
         line = file.getCurrentLine();
         type = checkType();
 
+        do{
+            this.processLine();
+        }while(this.nextLine());
+
     }
     //gets next line returns true if line not null
     public boolean nextLine(){
@@ -33,6 +37,18 @@ public class CodeAnalyzer {
     }
     public int getLineIndex(){
         return file.getLineIndex();
+    }
+
+    public boolean saveDataToFile(String path){
+        try{
+            file.saveDataToFile(path);
+            System.out.println("Saved to "+path);
+            return true;
+        }catch(Exception e){
+            e.printStackTrace();
+            System.out.println("Error while saving");
+            return false;
+        }
     }
 
     public int processLine(){
@@ -46,7 +62,8 @@ public class CodeAnalyzer {
             case 2:
                 //check comment
                 //find macros & replace them
-                processCodeLine(this.line);
+                String newLine = processCodeLine(this.line);
+                file.changeCurrentLine(newLine);
                 return 2;
             default:
                 System.out.println("Unexpected Type for Line");
@@ -56,13 +73,101 @@ public class CodeAnalyzer {
 
     private void preprocessing() {
         int space = line.indexOf(" ");
-        String operator = line.substring(0, space);
-        switch (operator){
-            case "#define": defineMacro(line.substring(space));
+        if(space != -1) {
+            String operator = line.substring(0, space);
+            switch (operator) {
+                case "#define":
+                    defineMacro(line.substring(space));
+                    file.deleteCurrentLine();
+                    file.reduceIndex();
+                    break;
+                case "#undef":
+                    undefMacro(line.substring(space));
+                    file.deleteCurrentLine();
+                    file.reduceIndex();
+                    break;
+                case "#include":
+                    include(line.substring(space));
+                    break;
+                case "#ifdef":
+                    ifdef(line.substring(space));
+                    break;
+
+            }
         }
     }
 
+    private void ifdef(String substring) {
+    }
+
+    private void include(String name) {
+        int begin = name.indexOf("\"");
+        boolean quote = false;
+        int beg = name.indexOf("<");
+        if(begin >= 0){
+                quote = true;
+                name = name.substring(begin+1);
+                int end = name.indexOf("\"");
+                if(end >= 0) name = name.substring(0, end);
+            }else{
+                name = name.substring(beg+1);
+                int end = name.indexOf(">");
+                if(end >= 0)name = name.substring(0, end);
+            }
+        boolean succes = false;
+        if(quote){
+            int i = filename.lastIndexOf("/");
+            String newfile = filename.substring(0,i+1) + name;
+            try{
+                CodeAnalyzer incl = new CodeAnalyzer(newfile, this.macroTable);
+                succes = true;
+            }catch(Exception e){
+                succes = false;
+            }
+        }
+    }
+
+    private void undefMacro(String name) {
+        name = removeComments(name);
+        name = StringOperations.trimSpaces(name);
+        Macro m = macroTable.checkForMacro(name);
+        if(m != null) {
+            macroTable.removeMacro(m);
+        }
+    }
+
+    public String removeComments(String code){
+        if (code.length() == 0) return code;
+        String result = code;
+        if(comment){
+            int commentEnd = StringOperations.checkBlockCommentEnd(code);
+            if(commentEnd >= 0){
+                comment = false;
+                return code.substring(commentEnd+2);
+            }
+            return "";
+        }
+        int lineComment = StringOperations.checkLineComment(code);
+        int blockComment = StringOperations.checkBlockComment(code);
+
+        if(lineComment >=0){
+            if(blockComment >= 0 && blockComment < lineComment){
+                comment = true;
+                return code.substring(0, blockComment) + removeComments(code.substring(blockComment));
+            }
+            code = code.substring(0, lineComment);
+            return code;
+        }
+        if(blockComment >= 0){
+            comment = true;
+            return code.substring(0, blockComment) + removeComments(code.substring(blockComment));
+        }
+        return code;
+    }
+
+
     private void defineMacro(String name) {
+        name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         int space = name.indexOf(" ");
         String body = "";
@@ -122,6 +227,7 @@ public class CodeAnalyzer {
                 comment = false;
                 return result.substring(0, commentEnd+2) + processCodeLine(code.substring(commentEnd+2));
             }
+            return code;
         }
         int lineComment = StringOperations.checkLineComment(code);
         if(lineComment >=0){
@@ -131,7 +237,7 @@ public class CodeAnalyzer {
         int blockComment = StringOperations.checkBlockComment(code);
         if(blockComment >= 0){
             comment = true;
-            return processCodeLine(code);
+            return checkForStrings(code.substring(0, blockComment)) + processCodeLine(code.substring(blockComment));
         }
         return checkForStrings(code);
 
@@ -154,10 +260,37 @@ public class CodeAnalyzer {
                 }else{
                     code = replaceFunctionMacro(code, m);
                 }
-
-                code = checkForMacros(code);
+                code = checkForReplacements(code);
                 break;
             }
+        }
+        return code;
+    }
+
+
+    private String replaceFunctionMacro(String code, Macro m) {
+        String name = m.getName();
+        int index = code.indexOf(name);
+        char prev = StringOperations.previousChar(code, index);
+        char next = StringOperations.nextChar(code, index + name.length() -1);
+        if(prev == ' ' || prev == '(' || prev == ','){
+            if(next != '('){
+                System.out.println("Fuction Macro without parenthesis");
+                return code;
+            }
+            int parBeg = index + name.length();
+            int parEnd = parBeg + StringOperations.closeParenthesis(code.substring(parBeg), 0);
+            String parameter = code.substring(parBeg,parEnd);
+
+            String expandedParameter = checkForReplacements(parameter);
+
+            String[] param = expandedParameter.split(",");
+            if(param.length != m.countArguments()){
+               System.out.println("Parameter missmatch for "+name);
+                return code;
+            }
+            String body = m.getBody(expandedParameter);
+            code = StringOperations.replaceString(code,name,body);
         }
         return code;
     }
@@ -168,46 +301,10 @@ public class CodeAnalyzer {
         char prev = StringOperations.previousChar(code, index);
         char next = StringOperations.nextChar(code, index + name.length() -1);
         if(prev == ' ' || prev == '(' || prev == ','){
-            if(next == ' ' || next == ')' || next == ','){
+            if(next == ' ' || next == ')' || next == ','|| next == ';'){
                 code = StringOperations.replaceString(code,name, m.getBody(""));
             }
         }
         return code;
-    }
-
-    private String checkForMacros(String code) {
-        if(code == "") return "";
-        String[] parts = code.split(" ");
-        String result = "";
-        for(String s: parts){
-            String res = s;
-            if(res.charAt(0) == '#') stringifyMacro(res);
-            if(StringOperations.openParenthesis(s) != -1){
-                res = checkFunctionMacro(s);
-            }else {
-                Macro m = macroTable.checkForMacro(s);
-                res = m.getBody("");
-            }
-            result = result +" " + res;
-        }
-
-        return result;
-    }
-
-    private String stringifyMacro(String res) {
-        String text = checkForMacros(res.substring(1));
-        if(text.equals(res.substring(1))) return res;
-        return "\"" + text + "\"";
-
-    }
-
-    private String checkFunctionMacro(String macro){
-        int open = StringOperations.openParenthesis(macro);
-        int close = open + 1 +StringOperations.closeParenthesis(line.substring(open+1), 0);
-        String parenthesis = macro.substring(open +1 , close);
-        String[] parts = parenthesis.split(",");
-        parenthesis = checkForMacros(parenthesis);
-
-
     }
 }

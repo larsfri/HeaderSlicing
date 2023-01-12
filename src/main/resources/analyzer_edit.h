@@ -1,3 +1,4 @@
+
 /* Utility functions for the analyzer.
    Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
@@ -19,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #ifndef GCC_ANALYZER_ANALYZER_H
-#define GCC_ANALYZER_ANALYZER_H
 
 #include "function.h"
 #include "json.h"
@@ -442,3 +442,6 @@ extern void sorry_no_analyzer ();
 #endif /* #if !ENABLE_ANALYZER */
 
 #endif /* GCC_ANALYZER_ANALYZER_H */
+
+
+

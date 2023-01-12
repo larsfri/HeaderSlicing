@@ -17,6 +17,7 @@ public class File {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(this.path));
             List<String> list = bufferedReader.lines().toList();
             dataLines.addAll(list);
+            dataLines.add(0,"");
             mergeContinuedLines();
             bufferedReader.close();
         } catch (FileNotFoundException e) {
@@ -100,6 +101,12 @@ public class File {
             writer.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void reduceIndex() {
+        if(lineIndex != 0){
+            lineIndex--;
         }
     }
 }

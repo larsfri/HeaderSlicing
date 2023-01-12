@@ -8,11 +8,18 @@ public class ObjectMacro extends Macro{
         this.body = definition;
     }
 
+    @Override
     public String getBody(String s){
         return body;
     }
 
+    @Override
     public int countArguments(){return -1;}
+
+    @Override
+    public boolean checkHashtag(){
+        return false;
+    }
 
 
 

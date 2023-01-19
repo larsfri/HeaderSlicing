@@ -90,14 +90,17 @@ public class CodeAnalyzer {
                     include(line.substring(space));
                     break;
                 case "#ifdef":
-                    ifdef(line.substring(space));
+                    ifDef(line.substring(space));
                     break;
 
             }
         }
     }
 
-    private void ifdef(String substring) {
+    private void ifDef(String name) {
+        name = removeComments(name);
+        name = StringOperations.trimSpaces(name);
+        boolean ignore = macroTable.checkIgnore(name);
     }
 
     private void include(String name) {
@@ -306,5 +309,9 @@ public class CodeAnalyzer {
             }
         }
         return code;
+    }
+
+    public File getFile() {
+        return this.file;
     }
 }

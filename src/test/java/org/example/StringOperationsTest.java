@@ -78,8 +78,63 @@ class StringOperationsTest {
         assertEquals(0, start);
         assertEquals(2, end);
     }
-    @Test
-    void checkCommentBegin(){
 
+    @Test
+    void testCheckForSequence() {
+        String s = "0123456";
+        int index = StringOperations.checkForSequence(s, "456");
+        assertEquals(4, index);
+    }
+
+    @Test
+    void testTrimSpaces() {
+        String s = "  0123";
+        s = StringOperations.trimSpaces(s);
+        assertEquals("0123", s);
+        String b = "  ";
+        b = StringOperations.trimSpaces(b);
+        assertEquals("", b);
+    }
+
+    @Test
+    void checkLineComment() {
+        int index = StringOperations.checkLineComment(comment);
+        assertEquals(0, index);
+    }
+
+    @Test
+    void checkBlockComment() {
+        int index = StringOperations.checkBlockComment(blockComment);
+        assertEquals(0, index);
+    }
+
+    @Test
+    void checkBlockCommentEnd() {
+        int index = StringOperations.checkBlockCommentEnd(blockComment);
+        assertEquals(9, index);
+    }
+
+    @Test
+    void replaceString() {
+        String s = "Test X * 3";
+        s = StringOperations.replaceString(s, "X", "10");
+        assertEquals("Test 10 * 3", s);
+    }
+
+    @Test
+    void previousChar() {
+        String s = "Test Test()";
+        char a = StringOperations.previousChar(s, 0);
+        char b = StringOperations.previousChar(s, 5);
+        assertEquals(a,b);
+    }
+
+    @Test
+    void nextChar() {
+        String s = "Test Test()";
+        char a = StringOperations.nextChar(s, 3);
+        char b = StringOperations.nextChar(s, 8);
+        assertEquals(' ', a);
+        assertEquals('(',b);
     }
 }

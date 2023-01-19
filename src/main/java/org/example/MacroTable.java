@@ -8,17 +8,33 @@ public class MacroTable {
     private ArrayList<String> ignoreList;
     private ArrayList<Macro> macros;
 
+    private String configPath = "src/main/resources/config.txt";
+
     public MacroTable(){
         macros = new ArrayList<Macro>();
+        ignoreList = new ArrayList<String>();
         addPresetMacros();
     }
 
     private void addPresetMacros() {
-        //ToDO
+        CodeAnalyzer config = new CodeAnalyzer(configPath, this);
+        addIgnoreList(config);
+
         CodeAnalyzer analyzer = new CodeAnalyzer("src/main/resources/gcc-predef.txt", this);
 
         macros.add(new ObjectMacro("__DATE__", getDate()));
         macros.add((new ObjectMacro("__TIME__", getTime())));
+    }
+
+    private void addIgnoreList(CodeAnalyzer config) {
+        File configFile = config.getFile();
+        configFile.setLineIndex(0);
+        String name = configFile.getCurrentLine();
+        while (name != null){
+            ignoreList.add(name);
+            name = configFile.getNextLine();
+        }
+
     }
 
     private String getTime() {
@@ -83,5 +99,10 @@ public class MacroTable {
     }
     public ArrayList<Macro> getMacros(){
         return macros;
+    }
+
+    public boolean checkIgnore(String name) {
+        if(ignoreList.contains(name)) return true;
+        return false;
     }
 }

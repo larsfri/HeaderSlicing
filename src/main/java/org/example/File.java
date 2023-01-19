@@ -46,6 +46,10 @@ public class File {
     }
 
     public int getLineIndex(){return lineIndex;}
+
+    public void setLineIndex(int index){
+        this.lineIndex = index;
+    }
     public String getPath(){
         return path;
     }

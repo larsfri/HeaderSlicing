@@ -9,31 +9,31 @@ public class SetUp {
     private ArrayList<String> paths;
 
     public SetUp(){
-        Process process;
         paths = new ArrayList<String>();
+        Process process;
+        ArrayList<String> readStream = new ArrayList<String>();
         try{
-            process = Runtime.getRuntime().exec("ipconfig");
+            process = Runtime.getRuntime().exec("wsl cpp -v /dev/null -o /dev/null");
             //wsl cpp -v /dev/null -o /dev/null
+            //bash "cpp -v /dev/null -o /dev/null"
             //wsl gcc -xc -E -v -
             //process = Runtime.getRuntime().exec("wsl echo | wsl gcc -Wp,-v -x c++ - -fsyntax-only");
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             String s;
             while ((s = reader.readLine()) != null) {
-                System.out.println("line: " + s);
+                readStream.add(s);
             }
-            List<String> list = reader.lines().toList();
-            paths.addAll(list);
             process.destroy();
         }catch(Exception e){
             throw new RuntimeException(e);
         }
 
         boolean path = false;
-        for (String line:paths) {
+        for (String line: readStream) {
             if(line.equals("End of search list.")) path = false;
-            if(!path){
-                paths.remove(line);
+            if(path){
+                paths.add(line);
             }
             if(line.equals("#include <...> search starts here:"))path = true;
         }

@@ -11,6 +11,10 @@ public class CodeAnalyzer {
     private boolean comment;
     private MacroTable macroTable;
 
+    private ArrayList<String> includePaths;
+    private int openIfCounter = 0;
+    private boolean[] elseCounter = new boolean[20];
+
 
     public CodeAnalyzer(String filename, MacroTable macroTable){
         if(macroTable == null){
@@ -18,6 +22,8 @@ public class CodeAnalyzer {
         }else{
             this.macroTable = macroTable;
         }
+        SetUp setup = new SetUp();
+        includePaths = setup.getPaths();
         this.filename = filename;
         file = new File(filename);
         line = file.getCurrentLine();
@@ -92,9 +98,30 @@ public class CodeAnalyzer {
                 case "#ifdef":
                     ifDef(line.substring(space));
                     break;
+                case "#ifndef":
+                    ifNotDef(line.substring(space));
+                    break;
+                case "#elif" :
+                    //ToDO
+                    break;
+                case "#else" :
+                    //ToDo
+                    break;
+                case "#if" :
+                    //ToDo
+                    break;
+                case "#endif" :
+                    //ToDo
+                    break;
 
             }
         }
+    }
+
+    private void ifNotDef(String name) {
+        name = removeComments(name);
+        name = StringOperations.trimSpaces(name);
+        boolean ignore = macroTable.checkIgnore(name);
     }
 
     private void ifDef(String name) {
@@ -107,6 +134,9 @@ public class CodeAnalyzer {
         int begin = name.indexOf("\"");
         boolean quote = false;
         int beg = name.indexOf("<");
+        if(begin == -1 && beg == -1){
+            return;
+        }
         if(begin >= 0){
                 quote = true;
                 name = name.substring(begin+1);
@@ -126,6 +156,18 @@ public class CodeAnalyzer {
                 succes = true;
             }catch(Exception e){
                 succes = false;
+            }
+        }
+        for(String searchPath: includePaths){
+            if(!succes){
+                searchPath = StringOperations.trimSpaces(searchPath);
+                String newfile = "//wsl.localhost/Ubuntu" + searchPath + "/" + name;
+                try{
+                    CodeAnalyzer incl = new CodeAnalyzer(newfile, this.macroTable);
+                    succes = true;
+                }catch(Exception e){
+                    succes = false;
+                }
             }
         }
     }

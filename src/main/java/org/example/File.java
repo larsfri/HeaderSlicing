@@ -21,7 +21,6 @@ public class File {
             mergeContinuedLines();
             bufferedReader.close();
         } catch (FileNotFoundException e) {
-            System.out.println("File not found");
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);

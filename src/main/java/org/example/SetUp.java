@@ -13,7 +13,7 @@ public class SetUp {
         Process process;
         ArrayList<String> readStream = new ArrayList<String>();
         try{
-            process = Runtime.getRuntime().exec("wsl cpp -v /dev/null -o /dev/null");
+            process = Runtime.getRuntime().exec("cpp -v /dev/null -o /dev/null");
             //wsl cpp -v /dev/null -o /dev/null
             //bash "cpp -v /dev/null -o /dev/null"
             //wsl gcc -xc -E -v -

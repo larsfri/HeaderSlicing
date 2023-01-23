@@ -14,6 +14,7 @@ public class CodeAnalyzer {
     private ArrayList<String> includePaths;
     private int openIfCounter = 0;
     private boolean[] elseCounter = new boolean[20];
+    private int falseIf = -1;
 
 
     public CodeAnalyzer(String filename, MacroTable macroTable){
@@ -58,6 +59,12 @@ public class CodeAnalyzer {
     }
 
     public int processLine(){
+        if(falseIf > -1){
+            checkEndIf();
+            file.deleteCurrentLine();
+            file.reduceIndex();
+            return 0;
+        }
         switch(type){
             case -1: return -1;
             case 0: return 0;
@@ -77,40 +84,74 @@ public class CodeAnalyzer {
         }
     }
 
+    private void checkEndIf() {
+        String code = StringOperations.trimSpaces(line);
+        if(code.charAt(0) == '#'){
+            String operator = code.substring(1);
+            operator = StringOperations.trimSpaces(operator);
+            int space = operator.indexOf(" ");
+            if(space >= 0){
+                operator = operator.substring(0, space);
+                switch (operator){
+                    case "endif":
+                        endIf();
+                        break;
+                    case "if" :
+                    case "ifdef" :
+                    case "ifndef":
+                        openIfCounter++;
+                }
+            }
+        }
+
+
+    }
+
+    private void endIf() {
+        if(openIfCounter == falseIf){
+            falseIf = -1;
+        }
+        openIfCounter--;
+    }
+
     private void preprocessing() {
-        int space = line.indexOf(" ");
+        String operator = line.substring(1);
+        operator = StringOperations.trimSpaces(operator);
+        int space = operator.indexOf(" ");
         if(space != -1) {
-            String operator = line.substring(0, space);
+            String subLine = operator.substring(space);
+            subLine = StringOperations.trimSpaces(subLine);
+            operator = operator.substring(0, space);
             switch (operator) {
-                case "#define":
-                    defineMacro(line.substring(space));
+                case "define":
+                    defineMacro(subLine);
                     file.deleteCurrentLine();
                     file.reduceIndex();
                     break;
-                case "#undef":
-                    undefMacro(line.substring(space));
+                case "undef":
+                    undefMacro(subLine);
                     file.deleteCurrentLine();
                     file.reduceIndex();
                     break;
-                case "#include":
-                    include(line.substring(space));
+                case "include":
+                    include(subLine);
                     break;
-                case "#ifdef":
-                    ifDef(line.substring(space));
+                case "ifdef":
+                    ifDef(subLine);
                     break;
-                case "#ifndef":
-                    ifNotDef(line.substring(space));
+                case "ifndef":
+                    ifNotDef(subLine);
                     break;
-                case "#elif" :
+                case "elif" :
                     //ToDO
                     break;
-                case "#else" :
+                case "else" :
                     //ToDo
                     break;
-                case "#if" :
+                case "if" :
                     //ToDo
                     break;
-                case "#endif" :
+                case "endif" :
                     //ToDo
                     break;
 
@@ -161,7 +202,7 @@ public class CodeAnalyzer {
         for(String searchPath: includePaths){
             if(!succes){
                 searchPath = StringOperations.trimSpaces(searchPath);
-                String newfile = "//wsl.localhost/Ubuntu" + searchPath + "/" + name;
+                String newfile = searchPath + "/" + name;
                 try{
                     CodeAnalyzer incl = new CodeAnalyzer(newfile, this.macroTable);
                     succes = true;
@@ -170,6 +211,7 @@ public class CodeAnalyzer {
                 }
             }
         }
+        if(!succes) System.out.println("Include failed: " + name);
     }
 
     private void undefMacro(String name) {

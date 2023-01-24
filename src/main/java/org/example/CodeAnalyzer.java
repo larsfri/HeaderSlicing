@@ -12,8 +12,7 @@ public class CodeAnalyzer {
     private MacroTable macroTable;
 
     private ArrayList<String> includePaths;
-    private int openIfCounter = 0;
-    private boolean[] elseCounter = new boolean[20];
+    private ArrayList<Integer> openIfs;
     private int falseIf = -1;
 
 
@@ -29,6 +28,7 @@ public class CodeAnalyzer {
         file = new File(filename);
         line = file.getCurrentLine();
         type = checkType();
+        openIfs = new ArrayList<Integer>();
 
         do{
             this.processLine();
@@ -87,19 +87,26 @@ public class CodeAnalyzer {
     private void checkEndIf() {
         String code = StringOperations.trimSpaces(line);
         if(code.charAt(0) == '#'){
-            String operator = code.substring(1);
-            operator = StringOperations.trimSpaces(operator);
-            int space = operator.indexOf(" ");
+            code = code.substring(1);
+            code = StringOperations.trimSpaces(code);
+            int space = code.indexOf(" ");
             if(space >= 0){
-                operator = operator.substring(0, space);
+                String operator = code.substring(0, space);
+                code = code.substring(space);
                 switch (operator){
                     case "endif":
-                        endIf();
+                        endFalseIf();
                         break;
                     case "if" :
                     case "ifdef" :
                     case "ifndef":
-                        openIfCounter++;
+                        openIfs.add(-1);
+                        break;
+                    case "elif" :
+                        checkElseIf(code);
+                        break;
+                    case "else" :
+                        falseIf = -1;
                 }
             }
         }
@@ -107,11 +114,41 @@ public class CodeAnalyzer {
 
     }
 
-    private void endIf() {
-        if(openIfCounter == falseIf){
+    private void checkElseIf(String code) {
+        int lastIf = openIfs.size() -1;
+        if(openIfs.get(lastIf) == 1){
+            falseIf = openIfs.size();
+            return;
+        }
+        if(checkIgnore(code)){
+            openIfs.remove(lastIf);
+            openIfs.add(0);
+        }
+        if(checkTrue(code)){
+                openIfs.remove(lastIf);
+                openIfs.add(1);
+        }else{
+            openIfs.remove(lastIf);
+            openIfs.add(-1);
+            falseIf = openIfs.size();
+        }
+    }
+
+    private boolean checkTrue(String code) {
+        return false;
+        //ToDo
+    }
+
+    private boolean checkIgnore(String code) {
+        return false;
+        //Todo
+    }
+
+    private void endFalseIf() {
+        if(openIfs.size() == falseIf){
             falseIf = -1;
         }
-        openIfCounter--;
+        openIfs.remove(openIfs.size()-1);
     }
 
     private void preprocessing() {
@@ -143,7 +180,7 @@ public class CodeAnalyzer {
                     ifNotDef(subLine);
                     break;
                 case "elif" :
-                    //ToDO
+                    checkElseIf(subLine);
                     break;
                 case "else" :
                     //ToDo
@@ -163,12 +200,44 @@ public class CodeAnalyzer {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         boolean ignore = macroTable.checkIgnore(name);
+        if(ignore){
+            openIfs.add(0);
+        }else{
+            if(!checkDef(name)){
+                openIfs.add(1);
+            }else{
+                openIfs.add(-1);
+                falseIf = openIfs.size();
+            }
+            file.deleteCurrentLine();
+            file.reduceIndex();
+        }
     }
 
     private void ifDef(String name) {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         boolean ignore = macroTable.checkIgnore(name);
+        if(ignore){
+            openIfs.add(0);
+        }else{
+            if(checkDef(name)){
+                openIfs.add(1);
+            }else{
+                openIfs.add(-1);
+                falseIf = openIfs.size();
+            }
+            file.deleteCurrentLine();
+            file.reduceIndex();
+        }
+    }
+
+    private boolean checkDef(String name) {
+        Macro m = macroTable.checkForMacro(name);
+        if(m == null){
+            return false;
+        }
+        return true;
     }
 
     private void include(String name) {

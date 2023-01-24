@@ -70,7 +70,7 @@ public class MacroTable {
     public void addObjectMacro(String name, String body) {
         Macro m = checkForMacro(name);
         if(m != null){
-            System.out.println("Macro "+name +" is redefined without #undef");
+            //System.out.println("Macro "+name +" is redefined without #undef");
             macros.remove(m);
         }
         ObjectMacro macro = new ObjectMacro(name, body);
@@ -79,7 +79,7 @@ public class MacroTable {
     public void addFunctionMacro(String name,String body, String[] parameter){
         Macro m = checkForMacro(name);
         if(m != null){
-            System.out.println("Macro "+name +" is redefined without #undef");
+            //System.out.println("Macro "+name +" is redefined without #undef");
             macros.remove(m);
         }
         FunctionMacro macro = new FunctionMacro(name, body, parameter);

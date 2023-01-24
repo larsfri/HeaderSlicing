@@ -16,10 +16,10 @@ public class CodeAnalyzer {
     private int falseIf = -1;
 
 
-    public CodeAnalyzer(String filename, MacroTable macroTable){
-        if(macroTable == null){
+    public CodeAnalyzer(String filename, MacroTable macroTable) {
+        if (macroTable == null) {
             this.macroTable = new MacroTable();
-        }else{
+        } else {
             this.macroTable = macroTable;
         }
         SetUp setup = new SetUp();
@@ -30,44 +30,48 @@ public class CodeAnalyzer {
         type = checkType();
         openIfs = new ArrayList<Integer>();
 
-        do{
+        do {
             this.processLine();
-        }while(this.nextLine());
+        } while (this.nextLine());
 
     }
+
     //gets next line returns true if line not null
-    public boolean nextLine(){
+    public boolean nextLine() {
         line = file.getNextLine();
         type = checkType();
-        if(type == -1) return false;
+        if (type == -1) return false;
         return true;
     }
-    public int getLineIndex(){
+
+    public int getLineIndex() {
         return file.getLineIndex();
     }
 
-    public boolean saveDataToFile(String path){
-        try{
+    public boolean saveDataToFile(String path) {
+        try {
             file.saveDataToFile(path);
-            System.out.println("Saved to "+path);
+            System.out.println("Saved to " + path);
             return true;
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error while saving");
             return false;
         }
     }
 
-    public int processLine(){
-        if(falseIf > -1){
+    public int processLine() {
+        if (falseIf > -1) {
             checkEndIf();
             file.deleteCurrentLine();
             file.reduceIndex();
             return 0;
         }
-        switch(type){
-            case -1: return -1;
-            case 0: return 0;
+        switch (type) {
+            case -1:
+                return -1;
+            case 0:
+                return 0;
             case 1:
                 //analyze Preprocessing code
                 preprocessing();
@@ -86,26 +90,27 @@ public class CodeAnalyzer {
 
     private void checkEndIf() {
         String code = StringOperations.trimSpaces(line);
-        if(code.charAt(0) == '#'){
+        if (code.equals("")) return;
+        if (code.charAt(0) == '#') {
             code = code.substring(1);
             code = StringOperations.trimSpaces(code);
             int space = code.indexOf(" ");
-            if(space >= 0){
+            if (space >= 0) {
                 String operator = code.substring(0, space);
                 code = code.substring(space);
-                switch (operator){
+                switch (operator) {
                     case "endif":
                         endFalseIf();
                         break;
-                    case "if" :
-                    case "ifdef" :
+                    case "if":
+                    case "ifdef":
                     case "ifndef":
                         openIfs.add(-1);
                         break;
-                    case "elif" :
+                    case "elif":
                         checkElseIf(code);
                         break;
-                    case "else" :
+                    case "else":
                         falseIf = -1;
                 }
             }
@@ -115,19 +120,19 @@ public class CodeAnalyzer {
     }
 
     private void checkElseIf(String code) {
-        int lastIf = openIfs.size() -1;
-        if(openIfs.get(lastIf) == 1){
+        int lastIf = openIfs.size() - 1;
+        if (openIfs.get(lastIf) == 1) {
             falseIf = openIfs.size();
             return;
         }
-        if(checkIgnore(code)){
+        if (checkIgnore(code)) {
             openIfs.remove(lastIf);
             openIfs.add(0);
         }
-        if(checkTrue(code)){
-                openIfs.remove(lastIf);
-                openIfs.add(1);
-        }else{
+        if (checkTrue(code)) {
+            openIfs.remove(lastIf);
+            openIfs.add(1);
+        } else {
             openIfs.remove(lastIf);
             openIfs.add(-1);
             falseIf = openIfs.size();
@@ -145,54 +150,73 @@ public class CodeAnalyzer {
     }
 
     private void endFalseIf() {
-        if(openIfs.size() == falseIf){
+        if (openIfs.size() == falseIf) {
             falseIf = -1;
         }
-        openIfs.remove(openIfs.size()-1);
+        openIfs.remove(openIfs.size() - 1);
     }
 
     private void preprocessing() {
         String operator = line.substring(1);
         operator = StringOperations.trimSpaces(operator);
         int space = operator.indexOf(" ");
-        if(space != -1) {
-            String subLine = operator.substring(space);
+        String subLine;
+        if (space != -1) {
+            subLine = operator.substring(space);
             subLine = StringOperations.trimSpaces(subLine);
             operator = operator.substring(0, space);
-            switch (operator) {
-                case "define":
-                    defineMacro(subLine);
-                    file.deleteCurrentLine();
-                    file.reduceIndex();
-                    break;
-                case "undef":
-                    undefMacro(subLine);
-                    file.deleteCurrentLine();
-                    file.reduceIndex();
-                    break;
-                case "include":
-                    include(subLine);
-                    break;
-                case "ifdef":
-                    ifDef(subLine);
-                    break;
-                case "ifndef":
-                    ifNotDef(subLine);
-                    break;
-                case "elif" :
-                    checkElseIf(subLine);
-                    break;
-                case "else" :
-                    //ToDo
-                    break;
-                case "if" :
-                    //ToDo
-                    break;
-                case "endif" :
-                    //ToDo
-                    break;
+        } else {
+            subLine = "";
+        }
 
-            }
+        switch (operator) {
+            case "define":
+                defineMacro(subLine);
+                file.deleteCurrentLine();
+                file.reduceIndex();
+                break;
+            case "undef":
+                undefMacro(subLine);
+                file.deleteCurrentLine();
+                file.reduceIndex();
+                break;
+            case "include":
+                include(subLine);
+                break;
+            case "ifdef":
+                ifDef(subLine);
+                break;
+            case "ifndef":
+                ifNotDef(subLine);
+                break;
+            case "elif":
+                checkElseIf(subLine);
+                break;
+            case "else":
+                doElse();
+                break;
+            case "if":
+                openIfs.add(1);
+                //ToDo
+                break;
+            case "endif":
+                openIfs.remove(openIfs.size() - 1);
+                file.deleteCurrentLine();
+                file.reduceIndex();
+                break;
+
+        }
+    }
+
+    private void doElse() {
+        int lastIf = openIfs.get(openIfs.size() - 1);
+        if (lastIf == 0) {
+            //Igonre else
+        }
+        if (lastIf == 1) {
+            falseIf = -1;
+            file.deleteCurrentLine();
+            file.reduceIndex();
         }
     }
 
@@ -200,12 +224,12 @@ public class CodeAnalyzer {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         boolean ignore = macroTable.checkIgnore(name);
-        if(ignore){
+        if (ignore) {
             openIfs.add(0);
-        }else{
-            if(!checkDef(name)){
+        } else {
+            if (!checkDef(name)) {
                 openIfs.add(1);
-            }else{
+            } else {
                 openIfs.add(-1);
                 falseIf = openIfs.size();
             }
@@ -218,12 +242,12 @@ public class CodeAnalyzer {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         boolean ignore = macroTable.checkIgnore(name);
-        if(ignore){
+        if (ignore) {
             openIfs.add(0);
-        }else{
-            if(checkDef(name)){
+        } else {
+            if (checkDef(name)) {
                 openIfs.add(1);
-            }else{
+            } else {
                 openIfs.add(-1);
                 falseIf = openIfs.size();
             }
@@ -234,87 +258,90 @@ public class CodeAnalyzer {
 
     private boolean checkDef(String name) {
         Macro m = macroTable.checkForMacro(name);
-        if(m == null){
+        if (m == null) {
             return false;
         }
         return true;
     }
 
     private void include(String name) {
+        if(name.contains("mingw.h")){
+            System.out.println("here");
+        }
         int begin = name.indexOf("\"");
         boolean quote = false;
         int beg = name.indexOf("<");
-        if(begin == -1 && beg == -1){
+        if (begin == -1 && beg == -1) {
             return;
         }
-        if(begin >= 0){
-                quote = true;
-                name = name.substring(begin+1);
-                int end = name.indexOf("\"");
-                if(end >= 0) name = name.substring(0, end);
-            }else{
-                name = name.substring(beg+1);
-                int end = name.indexOf(">");
-                if(end >= 0)name = name.substring(0, end);
-            }
+        if (begin >= 0) {
+            quote = true;
+            name = name.substring(begin + 1);
+            int end = name.indexOf("\"");
+            if (end >= 0) name = name.substring(0, end);
+        } else {
+            name = name.substring(beg + 1);
+            int end = name.indexOf(">");
+            if (end >= 0) name = name.substring(0, end);
+        }
         boolean succes = false;
-        if(quote){
+        if (quote) {
             int i = filename.lastIndexOf("/");
-            String newfile = filename.substring(0,i+1) + name;
-            try{
+            String newfile = filename.substring(0, i + 1) + name;
+            try {
                 CodeAnalyzer incl = new CodeAnalyzer(newfile, this.macroTable);
                 succes = true;
-            }catch(Exception e){
+            } catch (Exception e) {
                 succes = false;
             }
         }
-        for(String searchPath: includePaths){
-            if(!succes){
+        for (String searchPath : includePaths) {
+            if (!succes) {
                 searchPath = StringOperations.trimSpaces(searchPath);
                 String newfile = searchPath + "/" + name;
-                try{
+                try {
                     CodeAnalyzer incl = new CodeAnalyzer(newfile, this.macroTable);
                     succes = true;
-                }catch(Exception e){
+                } catch (Exception e) {
                     succes = false;
                 }
             }
         }
-        if(!succes) System.out.println("Include failed: " + name);
+        if (!succes) System.out.println("Include failed: " + name);
     }
 
     private void undefMacro(String name) {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         Macro m = macroTable.checkForMacro(name);
-        if(m != null) {
+        if (m != null) {
             macroTable.removeMacro(m);
         }
     }
 
-    public String removeComments(String code){
+    public String removeComments(String code) {
         if (code.length() == 0) return code;
         String result = code;
-        if(comment){
+        if (comment) {
             int commentEnd = StringOperations.checkBlockCommentEnd(code);
-            if(commentEnd >= 0){
+            if (commentEnd >= 0) {
                 comment = false;
-                return code.substring(commentEnd+2);
+                return code.substring(commentEnd + 2);
             }
             return "";
         }
         int lineComment = StringOperations.checkLineComment(code);
         int blockComment = StringOperations.checkBlockComment(code);
 
-        if(lineComment >=0){
-            if(blockComment >= 0 && blockComment < lineComment){
+        if (lineComment >= 0) {
+            if (blockComment >= 0 && blockComment < lineComment) {
                 comment = true;
                 return code.substring(0, blockComment) + removeComments(code.substring(blockComment));
             }
             code = code.substring(0, lineComment);
             return code;
         }
-        if(blockComment >= 0){
+        if (blockComment >= 0) {
             comment = true;
             return code.substring(0, blockComment) + removeComments(code.substring(blockComment));
         }
@@ -328,15 +355,15 @@ public class CodeAnalyzer {
         int space = name.indexOf(" ");
         String body = "";
         String macro = name;
-        if(space == -1) {
+        if (space == -1) {
             macroTable.addObjectMacro(macro, body);
-        }else{
+        } else {
             macro = name.substring(0, space);
             body = name.substring(space);
             body = StringOperations.trimSpaces(body);
-            if(macro.indexOf("(") == -1){
+            if (macro.indexOf("(") == -1) {
                 macroTable.addObjectMacro(macro, body);
-            }else{
+            } else {
                 defineFunctionMacro(name);
             }
         }
@@ -345,11 +372,11 @@ public class CodeAnalyzer {
 
     private void defineFunctionMacro(String name) {
         int open = StringOperations.openParenthesis((name));
-        int close = open + 1 + StringOperations.closeParenthesis(name.substring(open+1), 0);
-        if(close == -1 || close +2 > name.length()){
+        int close = open + 1 + StringOperations.closeParenthesis(name.substring(open + 1), 0);
+        if (close == -1 || close + 2 > name.length()) {
             System.out.println("Unexpected macro declaration, ERROR");
-        }else {
-            String parameter = name.substring(open +1, close);
+        } else {
+            String parameter = name.substring(open + 1, close);
             String body = name.substring(close + 1);
             String[] param = parameter.split(",");
             name = name.substring(0, open);
@@ -366,32 +393,32 @@ public class CodeAnalyzer {
         */
     public int checkType() {
 
-        if(line == null) return -1;
-        if(line.equals("")) return 0;
-        if(line.charAt(0) == '#') return 1;
-        if(StringOperations.trimSpaces(line).equals("")) return 0;
+        if (line == null) return -1;
+        if (line.equals("")) return 0;
+        if (line.charAt(0) == '#') return 1;
+        if (StringOperations.trimSpaces(line).equals("")) return 0;
 
         return 2;
     }
 
-    public String processCodeLine(String code){
+    public String processCodeLine(String code) {
         if (code.length() == 0) return code;
         String result = code;
-        if(comment){
+        if (comment) {
             int commentEnd = StringOperations.checkBlockCommentEnd(code);
-            if(commentEnd >= 0){
+            if (commentEnd >= 0) {
                 comment = false;
-                return result.substring(0, commentEnd+2) + processCodeLine(code.substring(commentEnd+2));
+                return result.substring(0, commentEnd + 2) + processCodeLine(code.substring(commentEnd + 2));
             }
             return code;
         }
         int lineComment = StringOperations.checkLineComment(code);
-        if(lineComment >=0){
+        if (lineComment >= 0) {
             code = code.substring(0, lineComment);
             return processCodeLine(code) + result.substring(lineComment);
         }
         int blockComment = StringOperations.checkBlockComment(code);
-        if(blockComment >= 0){
+        if (blockComment >= 0) {
             comment = true;
             return checkForStrings(code.substring(0, blockComment)) + processCodeLine(code.substring(blockComment));
         }
@@ -401,22 +428,24 @@ public class CodeAnalyzer {
 
     private String checkForStrings(String code) {
         int index = StringOperations.checkString(code);
-        if(index == -1) return checkForReplacements(code);
-        int end = index+1 + StringOperations.checkString(code.substring(index+1));
+        if (index == -1) return checkForReplacements(code);
+        int end = index + 1 + StringOperations.checkString(code.substring(index + 1));
 
-        return checkForReplacements(code.substring(0, index)) + code.substring(index, end+1) + checkForStrings(code.substring(end+1));
-        
+        return checkForReplacements(code.substring(0, index)) + code.substring(index, end + 1) + checkForStrings(code.substring(end + 1));
+
     }
 
-    private String checkForReplacements(String code){
-        for(Macro m: macroTable.getMacros()){
-            if(code.contains(m.getName())){
-                if(m.countArguments() == -1){
+    private String checkForReplacements(String code) {
+        for (Macro m : macroTable.getMacros()) {
+            if (code.contains(m.getName())) {
+                String oldCode = code;
+                if (m.countArguments() == -1) {
                     code = replaceObjectMacro(code, m);
-                }else{
+                } else {
                     code = replaceFunctionMacro(code, m);
                 }
-                code = checkForReplacements(code);
+                if (!code.equals(oldCode)) code = checkForReplacements(code);
+
                 break;
             }
         }
@@ -428,25 +457,25 @@ public class CodeAnalyzer {
         String name = m.getName();
         int index = code.indexOf(name);
         char prev = StringOperations.previousChar(code, index);
-        char next = StringOperations.nextChar(code, index + name.length() -1);
-        if(prev == ' ' || prev == '(' || prev == ','){
-            if(next != '('){
+        char next = StringOperations.nextChar(code, index + name.length() - 1);
+        if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}') {
+            if (next != '(') {
                 System.out.println("Fuction Macro without parenthesis");
                 return code;
             }
             int parBeg = index + name.length();
             int parEnd = parBeg + StringOperations.closeParenthesis(code.substring(parBeg), 0);
-            String parameter = code.substring(parBeg,parEnd);
+            String parameter = code.substring(parBeg, parEnd);
 
             String expandedParameter = checkForReplacements(parameter);
 
             String[] param = expandedParameter.split(",");
-            if(param.length != m.countArguments()){
-               System.out.println("Parameter missmatch for "+name);
+            if (param.length != m.countArguments()) {
+                System.out.println("Parameter missmatch for " + name);
                 return code;
             }
             String body = m.getBody(expandedParameter);
-            code = StringOperations.replaceString(code,name,body);
+            code = StringOperations.replaceString(code, name, body);
         }
         return code;
     }
@@ -455,10 +484,10 @@ public class CodeAnalyzer {
         String name = m.getName();
         int index = code.indexOf(name);
         char prev = StringOperations.previousChar(code, index);
-        char next = StringOperations.nextChar(code, index + name.length() -1);
-        if(prev == ' ' || prev == '(' || prev == ','){
-            if(next == ' ' || next == ')' || next == ','|| next == ';'){
-                code = StringOperations.replaceString(code,name, m.getBody(""));
+        char next = StringOperations.nextChar(code, index + name.length() - 1);
+        if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}') {
+            if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}') {
+                code = StringOperations.replaceString(code, name, m.getBody(""));
             }
         }
         return code;

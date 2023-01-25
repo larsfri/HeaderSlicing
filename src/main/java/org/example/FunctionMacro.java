@@ -35,7 +35,7 @@ public class FunctionMacro extends Macro{
                 i--;
             }
         }
-        return body;
+        return result;
     }
 
     @Override

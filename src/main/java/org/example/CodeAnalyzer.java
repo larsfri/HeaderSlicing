@@ -95,9 +95,13 @@ public class CodeAnalyzer {
             code = code.substring(1);
             code = StringOperations.trimSpaces(code);
             int space = code.indexOf(" ");
+            String operator = code;
             if (space >= 0) {
-                String operator = code.substring(0, space);
+                operator = code.substring(0, space);
                 code = code.substring(space);
+            }else {
+                code = "";
+            }
                 switch (operator) {
                     case "endif":
                         endFalseIf();
@@ -113,7 +117,7 @@ public class CodeAnalyzer {
                     case "else":
                         falseIf = -1;
                 }
-            }
+
         }
 
 
@@ -200,7 +204,9 @@ public class CodeAnalyzer {
                 //ToDo
                 break;
             case "endif":
-                openIfs.remove(openIfs.size() - 1);
+                if(openIfs.size()>0) {
+                    openIfs.remove(openIfs.size() - 1);
+                }
                 file.deleteCurrentLine();
                 file.reduceIndex();
                 break;
@@ -265,7 +271,7 @@ public class CodeAnalyzer {
     }
 
     private void include(String name) {
-        if(name.contains("mingw.h")){
+        if(name.contains("features.h")){
             System.out.println("here");
         }
         int begin = name.indexOf("\"");
@@ -378,6 +384,7 @@ public class CodeAnalyzer {
         } else {
             String parameter = name.substring(open + 1, close);
             String body = name.substring(close + 1);
+            body = StringOperations.trimSpaces(body);
             String[] param = parameter.split(",");
             name = name.substring(0, open);
             macroTable.addFunctionMacro(name, body, param);
@@ -464,8 +471,9 @@ public class CodeAnalyzer {
                 return code;
             }
             int parBeg = index + name.length();
-            int parEnd = parBeg + StringOperations.closeParenthesis(code.substring(parBeg), 0);
-            String parameter = code.substring(parBeg, parEnd);
+            int parEnd = parBeg + 1 + StringOperations.closeParenthesis(code.substring(parBeg +1), 0);
+            String parameter = code.substring(parBeg +1, parEnd);
+            String oldMacro = code.substring(index, parEnd+1);
 
             String expandedParameter = checkForReplacements(parameter);
 
@@ -475,7 +483,7 @@ public class CodeAnalyzer {
                 return code;
             }
             String body = m.getBody(expandedParameter);
-            code = StringOperations.replaceString(code, name, body);
+            code = StringOperations.replaceString(code, oldMacro, body);
         }
         return code;
     }

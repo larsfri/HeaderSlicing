@@ -14,6 +14,7 @@ public class CodeAnalyzer {
     private ArrayList<String> includePaths;
     private ArrayList<Integer> openIfs;
     private int falseIf = -1;
+    private int expandedMacros;
 
 
     public CodeAnalyzer(String filename, MacroTable macroTable) {
@@ -31,6 +32,7 @@ public class CodeAnalyzer {
         openIfs = new ArrayList<Integer>();
 
         do {
+            expandedMacros = 0;
             this.processLine();
         } while (this.nextLine());
 
@@ -99,24 +101,24 @@ public class CodeAnalyzer {
             if (space >= 0) {
                 operator = code.substring(0, space);
                 code = code.substring(space);
-            }else {
+            } else {
                 code = "";
             }
-                switch (operator) {
-                    case "endif":
-                        endFalseIf();
-                        break;
-                    case "if":
-                    case "ifdef":
-                    case "ifndef":
-                        openIfs.add(-1);
-                        break;
-                    case "elif":
-                        checkElseIf(code);
-                        break;
-                    case "else":
-                        falseIf = -1;
-                }
+            switch (operator) {
+                case "endif":
+                    endFalseIf();
+                    break;
+                case "if":
+                case "ifdef":
+                case "ifndef":
+                    openIfs.add(-1);
+                    break;
+                case "elif":
+                    checkElseIf(code);
+                    break;
+                case "else":
+                    falseIf = -1;
+            }
 
         }
 
@@ -161,6 +163,9 @@ public class CodeAnalyzer {
     }
 
     private void preprocessing() {
+        while (line.contains("\t")) {
+            line = line.replace("\t", "  ");
+        }
         String operator = line.substring(1);
         operator = StringOperations.trimSpaces(operator);
         int space = operator.indexOf(" ");
@@ -204,7 +209,7 @@ public class CodeAnalyzer {
                 //ToDo
                 break;
             case "endif":
-                if(openIfs.size()>0) {
+                if (openIfs.size() > 0) {
                     openIfs.remove(openIfs.size() - 1);
                 }
                 file.deleteCurrentLine();
@@ -271,9 +276,6 @@ public class CodeAnalyzer {
     }
 
     private void include(String name) {
-        if(name.contains("features.h")){
-            System.out.println("here");
-        }
         int begin = name.indexOf("\"");
         boolean quote = false;
         int beg = name.indexOf("<");
@@ -379,7 +381,7 @@ public class CodeAnalyzer {
     private void defineFunctionMacro(String name) {
         int open = StringOperations.openParenthesis((name));
         int close = open + 1 + StringOperations.closeParenthesis(name.substring(open + 1), 0);
-        if (close == -1 || close + 2 > name.length()) {
+        if (close == -1 || close + 1 > name.length()) {
             System.out.println("Unexpected macro declaration, ERROR");
         } else {
             String parameter = name.substring(open + 1, close);
@@ -427,6 +429,11 @@ public class CodeAnalyzer {
         int blockComment = StringOperations.checkBlockComment(code);
         if (blockComment >= 0) {
             comment = true;
+            int blockEnd = StringOperations.checkBlockCommentEnd(code);
+            if (blockEnd >= 0) {
+                String check = code.substring(0, blockComment) + code.substring(blockEnd + 2);
+                return checkForStrings(check) + code.substring(blockComment, blockEnd + 2);
+            }
             return checkForStrings(code.substring(0, blockComment)) + processCodeLine(code.substring(blockComment));
         }
         return checkForStrings(code);
@@ -434,24 +441,32 @@ public class CodeAnalyzer {
     }
 
     private String checkForStrings(String code) {
+        /*
         int index = StringOperations.checkString(code);
         if (index == -1) return checkForReplacements(code);
         int end = index + 1 + StringOperations.checkString(code.substring(index + 1));
 
         return checkForReplacements(code.substring(0, index)) + code.substring(index, end + 1) + checkForStrings(code.substring(end + 1));
 
+         */
+        return checkForReplacements(code);
+
     }
 
     private String checkForReplacements(String code) {
+        if(expandedMacros > 20) return code;
         for (Macro m : macroTable.getMacros()) {
             if (code.contains(m.getName())) {
+
                 String oldCode = code;
                 if (m.countArguments() == -1) {
                     code = replaceObjectMacro(code, m);
                 } else {
                     code = replaceFunctionMacro(code, m);
                 }
-                if (!code.equals(oldCode)) code = checkForReplacements(code);
+                if (!code.equals(oldCode)) {
+                    code = checkForReplacements(code);
+                }
 
                 break;
             }
@@ -467,13 +482,13 @@ public class CodeAnalyzer {
         char next = StringOperations.nextChar(code, index + name.length() - 1);
         if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}') {
             if (next != '(') {
-                System.out.println("Fuction Macro without parenthesis");
+                //System.out.println("Function Macro without parenthesis" + name);
                 return code;
             }
             int parBeg = index + name.length();
-            int parEnd = parBeg + 1 + StringOperations.closeParenthesis(code.substring(parBeg +1), 0);
-            String parameter = code.substring(parBeg +1, parEnd);
-            String oldMacro = code.substring(index, parEnd+1);
+            int parEnd = parBeg + 1 + StringOperations.closeParenthesis(code.substring(parBeg + 1), 0);
+            String parameter = code.substring(parBeg + 1, parEnd);
+            String oldMacro = code.substring(index, parEnd + 1);
 
             String expandedParameter = checkForReplacements(parameter);
 

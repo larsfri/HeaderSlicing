@@ -1,5 +1,6 @@
 package org.example;
 
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ public class MacroTable {
     private ArrayList<Macro> macros;
 
     private String configPath = "src/main/resources/config.txt";
+    private String predefPath = "src/main/resources/gcc-predef.txt";
 
     public MacroTable(){
         macros = new ArrayList<Macro>();
@@ -19,11 +21,46 @@ public class MacroTable {
     private void addPresetMacros() {
         CodeAnalyzer config = new CodeAnalyzer(configPath, this);
         addIgnoreList(config);
+        ArrayList<String> predefs = getPredefs();
+        updatePredef(predefs);
 
-        CodeAnalyzer analyzer = new CodeAnalyzer("src/main/resources/gcc-predef.txt", this);
+        CodeAnalyzer analyzer = new CodeAnalyzer(predefPath, this);
 
         macros.add(new ObjectMacro("__DATE__", getDate()));
         macros.add((new ObjectMacro("__TIME__", getTime())));
+    }
+
+    private void updatePredef(ArrayList<String> predefs) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(predefPath));
+
+            for (String line: predefs) {
+                writer.write(line);
+                writer.newLine();
+            }
+
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ArrayList<String> getPredefs() {
+        Process process;
+        ArrayList<String> readStream = new ArrayList<String>();
+        try{
+            process = Runtime.getRuntime().exec("echo | gcc -dM -E -");
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String s;
+            while ((s = reader.readLine()) != null) {
+                readStream.add(s);
+            }
+            process.destroy();
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        return readStream;
     }
 
     private void addIgnoreList(CodeAnalyzer config) {

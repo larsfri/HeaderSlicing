@@ -34,7 +34,7 @@ public class File {
              if (line.length() > 0) {
                  char lastChar = line.charAt(line.length() - 1);
                  if (lastChar == '\\') {
-                     String merge = line + dataLines.get(i + 1);
+                     String merge = line.substring(0, line.length()-1) + dataLines.get(i + 1);
                      dataLines.set(i, merge);
                      dataLines.remove(i + 1);
                      i--;

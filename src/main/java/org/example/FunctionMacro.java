@@ -27,13 +27,19 @@ public class FunctionMacro extends Macro{
             return body;
         }
         String newBody = body;
-        String result = body;
         for (int i = 0; i < param.length; i++) {
-            result = StringOperations.replaceString(result, arguments[i], param[i]);
-            if(!result.equals(newBody)){
-                newBody = result;
-                i--;
-            }
+            newBody = replaceParam(newBody, param[i], i);
+        }
+        return newBody;
+    }
+
+    private String replaceParam(String newBody, String replacement, int index) {
+        String result = newBody;
+        result = StringOperations.replaceString(newBody, arguments[index], replacement);
+        if(!result.equals(newBody)){
+            int start = newBody.indexOf(arguments[index]);
+            start = start + replacement.length();
+            result = result.substring(0, start) + replaceParam(result.substring(start), replacement, index);
         }
         return result;
     }

@@ -67,6 +67,7 @@ public class MacroTable {
         File configFile = config.getFile();
         configFile.setLineIndex(0);
         String name = configFile.getCurrentLine();
+        if(name.equals("")) name = configFile.getNextLine();
         while (name != null){
             ignoreList.add(name);
             name = configFile.getNextLine();

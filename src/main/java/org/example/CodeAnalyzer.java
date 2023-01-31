@@ -163,21 +163,21 @@ public class CodeAnalyzer {
     }
 
     private void preprocessing() {
+        if(line.contains("SQLITE_OMIT_AUTHO")){
+            System.out.println("breakpoint");
+        }
         while (line.contains("\t")) {
             line = line.replace("\t", "  ");
         }
         String operator = line.substring(1);
         operator = StringOperations.trimSpaces(operator);
         int space = operator.indexOf(" ");
-        String subLine;
+        String subLine = "";
         if (space != -1) {
             subLine = operator.substring(space);
             subLine = StringOperations.trimSpaces(subLine);
             operator = operator.substring(0, space);
-        } else {
-            subLine = "";
         }
-
         switch (operator) {
             case "define":
                 defineMacro(subLine);
@@ -430,7 +430,8 @@ public class CodeAnalyzer {
         if (blockComment >= 0) {
             comment = true;
             int blockEnd = StringOperations.checkBlockCommentEnd(code);
-            if (blockEnd >= 0) {
+            if (blockEnd > blockComment) {
+                comment = false;
                 String check = code.substring(0, blockComment) + code.substring(blockEnd + 2);
                 return checkForStrings(check) + code.substring(blockComment, blockEnd + 2);
             }
@@ -480,7 +481,7 @@ public class CodeAnalyzer {
         int index = code.indexOf(name);
         char prev = StringOperations.previousChar(code, index);
         char next = StringOperations.nextChar(code, index + name.length() - 1);
-        if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}') {
+        if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}' || prev == '=') {
             if (next != '(') {
                 //System.out.println("Function Macro without parenthesis" + name);
                 return code;
@@ -508,8 +509,8 @@ public class CodeAnalyzer {
         int index = code.indexOf(name);
         char prev = StringOperations.previousChar(code, index);
         char next = StringOperations.nextChar(code, index + name.length() - 1);
-        if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}') {
-            if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}') {
+        if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}' || prev == '=') {
+            if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}'|| next == '=') {
                 code = StringOperations.replaceString(code, name, m.getBody(""));
             }
         }

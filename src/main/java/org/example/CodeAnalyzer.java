@@ -92,6 +92,7 @@ public class CodeAnalyzer {
 
     private void checkEndIf() {
         String code = StringOperations.trimSpaces(line);
+
         if (code.equals("")) return;
         if (code.charAt(0) == '#') {
             code = code.substring(1);
@@ -126,6 +127,9 @@ public class CodeAnalyzer {
     }
 
     private void checkElseIf(String code) {
+        code = removeComments(code);
+        code = StringOperations.trimSpaces(code);
+
         int lastIf = openIfs.size() - 1;
         if (openIfs.get(lastIf) == 1) {
             falseIf = openIfs.size();
@@ -145,14 +149,10 @@ public class CodeAnalyzer {
         }
     }
 
-    private boolean checkTrue(String code) {
-        return false;
-        //ToDo
-    }
-
     private boolean checkIgnore(String code) {
-        return false;
-        //Todo
+        code = removeComments(code);
+        code = StringOperations.trimSpaces(code);
+        return macroTable.checkIgnore(code);
     }
 
     private void endFalseIf() {
@@ -163,9 +163,6 @@ public class CodeAnalyzer {
     }
 
     private void preprocessing() {
-        if(line.contains("SQLITE_OMIT_AUTHO")){
-            System.out.println("breakpoint");
-        }
         while (line.contains("\t")) {
             line = line.replace("\t", "  ");
         }
@@ -205,18 +202,89 @@ public class CodeAnalyzer {
                 doElse();
                 break;
             case "if":
-                openIfs.add(1);
-                //ToDo
+                checkIf(subLine);
                 break;
             case "endif":
-                if (openIfs.size() > 0) {
-                    openIfs.remove(openIfs.size() - 1);
-                }
-                file.deleteCurrentLine();
-                file.reduceIndex();
+                endIf();
                 break;
 
         }
+    }
+
+    private void endIf() {
+        boolean check = false;
+        if (openIfs.size() > 0) {
+            if(openIfs.get(openIfs.size()-1) == 0) check = true;
+            openIfs.remove(openIfs.size() - 1);
+        }
+        if(!check) {
+            file.deleteCurrentLine();
+            file.reduceIndex();
+        }
+    }
+
+    private void checkIf(String expression) {
+        expression = removeComments(expression);
+        expression = StringOperations.trimSpaces(expression);
+        if(macroTable.checkLineIgnore(expression)){
+            openIfs.add(0);
+            return;
+        }
+        boolean ifTrue = checkTrue(expression);
+        if(ifTrue){
+            openIfs.add(1);
+        }else {
+            openIfs.add(-1);
+            falseIf = openIfs.size();
+        }
+        file.deleteCurrentLine();
+        file.reduceIndex();
+    }
+
+    private boolean checkTrue(String expression) {
+        expression = replaceDefinedOperator(expression);
+        expression = processCodeLine(expression);
+        LogicExpression expr = new LogicExpression(expression);
+        return expr.getValue();
+
+    }
+
+    private String replaceDefinedOperator(String expression) {
+        boolean check = false;
+        int length = 7;
+        int index = expression.indexOf("defined");
+        if(index >= 0){
+            index = index +7;
+            if(expression.length() > index){
+
+                String macro = expression.substring(index);
+                length = length + macro.length();
+                macro = StringOperations.trimSpaces(macro);
+                length = length - macro.length();
+                int space = macro.indexOf(" ");
+                if(space >= 0){
+                    macro = macro.substring(0, space);
+                }
+                length = length + macro.length();
+                if(macro.charAt(0) == '('){
+                    macro = macro.substring(1);
+                    if(macro.charAt(macro.length()-1) == ')'){
+                        macro = macro.substring(0, macro.length()-1);
+                    }
+                }
+                Macro m = macroTable.checkForMacro(macro);
+                if(m != null) check = true;
+            }
+            String begin = expression.substring(0, index -7);
+            String result = "0";
+            if(check) result = "1";
+            String end = "";
+            if (expression.length() > (length +  index)) end = expression.substring( length + index -7);
+            expression = begin + result + end;
+            expression = replaceDefinedOperator(expression);
+        }
+
+        return expression;
     }
 
     private void doElse() {

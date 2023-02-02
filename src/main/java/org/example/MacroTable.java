@@ -143,4 +143,12 @@ public class MacroTable {
         if(ignoreList.contains(name)) return true;
         return false;
     }
+    public boolean checkLineIgnore(String line){
+        for(String name: ignoreList){
+            if(line.contains(name)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

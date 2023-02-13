@@ -293,7 +293,7 @@ public class CodeAnalyzer {
             //Igonre else
         }
         if (lastIf == 1) {
-            falseIf = -1;
+            falseIf = openIfs.size();
             file.deleteCurrentLine();
             file.reduceIndex();
         }

@@ -57,6 +57,10 @@ public class StringOperations {
             line = line.substring(1);
             if(line.equals(""))return line;
         }
+        while(line.charAt(line.length()-1) == ' '){
+            line = line.substring(0, line.length()-1);
+            if(line.equals(""))return line;
+        }
         return line;
     }
     //returns index of first opening parenthesis if occurs

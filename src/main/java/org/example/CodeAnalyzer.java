@@ -142,6 +142,7 @@ public class CodeAnalyzer {
         if (checkTrue(code)) {
             openIfs.remove(lastIf);
             openIfs.add(1);
+            falseIf = -1;
         } else {
             openIfs.remove(lastIf);
             openIfs.add(-1);
@@ -279,7 +280,7 @@ public class CodeAnalyzer {
             String result = "0";
             if(check) result = "1";
             String end = "";
-            if (expression.length() > (length +  index)) end = expression.substring( length + index -7);
+            if (expression.length() > (length +  index-7)) end = expression.substring( length + index -7);
             expression = begin + result + end;
             expression = replaceDefinedOperator(expression);
         }

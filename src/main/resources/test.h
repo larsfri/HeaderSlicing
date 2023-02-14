@@ -29,3 +29,35 @@ Fehler
 #else
 Import erfolgreich
 #endif
+Test if
+#if 1
+Success easy test
+#else
+Auswertung falsch
+#endif
+
+#if defined(ABC)
+Success second test
+#else
+Auswertung falsch
+#endif
+
+#if defined(ABC) && ABC
+Auswertung falsch
+#if 1
+Inner Test korrekt
+#else
+Fehler
+#endif
+#else
+Success third test
+#endif
+
+
+#if defined(ABC) && ABC
+Auswertung falsch
+#elif defined(ABC)
+Success elif test
+#else
+Auswertung falsch(else)
+#endif

@@ -26,6 +26,9 @@ public class File {
             throw new RuntimeException(e);
         }
     }
+    public File(){
+        path = "";
+    }
     //Merges lines separated by backslashs, last line isn't checked
     private void mergeContinuedLines() {
         if(dataLines != null){
@@ -55,6 +58,8 @@ public class File {
     public void setPath(String path){
         this.path = path;
     }
+    public void addLine(String line){dataLines.add(line);}
+    public void clear(){dataLines.clear();}
     public void insertLineAfterIndex(String line){
         dataLines.add(lineIndex+1, line);
     }

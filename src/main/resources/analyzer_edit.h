@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_ANALYZER_ANALYZER_H
 
 #include "function.h"
 #include "json.h"
@@ -433,15 +432,10 @@ private:
 
 /* Disable -Wformat-diag; we want to be able to use pp_printf
    for logging/dumping without complying with the rules for diagnostics.  */
-#if __GNUC__ >= 10
 #pragma GCC diagnostic ignored "-Wformat-diag"
-#endif
 
-#if !ENABLE_ANALYZER
 extern void sorry_no_analyzer ();
-#endif /* #if !ENABLE_ANALYZER */
 
-#endif /* GCC_ANALYZER_ANALYZER_H */
 
 
 

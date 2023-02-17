@@ -29,6 +29,7 @@ Fehler
 #else
 Import erfolgreich
 #endif
+
 Test if
 #if 1
 Success easy test
@@ -41,6 +42,8 @@ Success second test
 #else
 Auswertung falsch
 #endif
+
+#define ABC
 
 #if defined(ABC) && ABC
 Auswertung falsch

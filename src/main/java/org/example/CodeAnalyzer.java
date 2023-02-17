@@ -115,10 +115,14 @@ public class CodeAnalyzer {
                     openIfs.add(-1);
                     break;
                 case "elif":
-                    checkElseIf(code);
+                    if(falseIf  == openIfs.size()) {
+                        checkElseIf(code);
+                    }
                     break;
                 case "else":
-                    falseIf = -1;
+                    if(falseIf  == openIfs.size()) {
+                        falseIf = -1;
+                    }
             }
 
         }

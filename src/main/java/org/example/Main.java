@@ -7,15 +7,15 @@ public class Main {
 
 
         System.out.println("Hello world!");
-        String filename = "src/main/resources/SQLite/sqlite-src-3400100/src/alter.c";
-        //String filename = "src/main/resources/test.h";
+        //String filename = "src/main/resources/SQLite/sqlite-src-3400100/src/alter.c";
+        String filename = "src/main/resources/test.h";
         String newFile = "src/main/resources/test_processed.h";
 
 
         CodeAnalyzer analyzer = new CodeAnalyzer(filename, null);
-        //analyzer.saveDataToFile(newFile);
+        analyzer.saveDataToFile(newFile);
 
-        analyzer.saveDataToFile("src/main/resources/SQLite/sqlite-src-3400100/src/alter_edit.c");
+        //analyzer.saveDataToFile("src/main/resources/SQLite/sqlite-src-3400100/src/alter_edit.c");
 
 
 /*

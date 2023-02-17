@@ -45,6 +45,11 @@ Auswertung falsch
 
 #define ABC
 
+"ABC" ABC
+OBJ "OBJ"
+OBJ OBJ OBJ
+"OBJ"1
+
 #if defined(ABC) && ABC
 Auswertung falsch
 #if 1

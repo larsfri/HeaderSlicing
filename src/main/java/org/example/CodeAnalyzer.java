@@ -528,21 +528,42 @@ public class CodeAnalyzer {
     }
 
     private String checkForReplacements(String code) {
-        if(expandedMacros > 20) return code;
+        if(expandedMacros > 25) return code;
         for (Macro m : macroTable.getMacros()) {
             if (code.contains(m.getName())) {
+                boolean inString = false;
+                int index = code.indexOf(m.getName());
+                int strBegin = StringOperations.checkString(code);
+                while(strBegin != -1) {
+                    int strEnd = strBegin + 1 + StringOperations.checkString(code.substring(strBegin + 1));
+                    if(index > strBegin && index < strEnd){
+                        inString = true;
+                        if(code.length() >= strEnd) {
+                            code = code.substring(0, strEnd + 1) + checkForReplacements(code.substring(strEnd + 1));
+                        }
+                    }
+                    int nextStr = StringOperations.checkString(code.substring(strEnd +1));
+                    if(nextStr != -1){
+                        strBegin = nextStr +1 +strEnd;
+                    }else{
+                        strBegin = nextStr;
+                    }
 
-                String oldCode = code;
-                if (m.countArguments() == -1) {
-                    code = replaceObjectMacro(code, m);
-                } else {
-                    code = replaceFunctionMacro(code, m);
-                }
-                if (!code.equals(oldCode)) {
-                    code = checkForReplacements(code);
                 }
 
-                break;
+                if (!inString) {
+                    String oldCode = code;
+                    if (m.countArguments() == -1) {
+                        code = replaceObjectMacro(code, m);
+                    } else {
+                        code = replaceFunctionMacro(code, m);
+                    }
+                    if (!code.equals(oldCode)) {
+                        code = checkForReplacements(code);
+                    }
+
+                    break;
+                }
             }
         }
         return code;

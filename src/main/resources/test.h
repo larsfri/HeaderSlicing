@@ -2,7 +2,8 @@
 
 #define OBJ Object Macro body
 #define FUNC(X,Y,Z) Function macro Body with X,Y,Z as Params
-
+test #OBJ
+#OBJ
 #ifdef OBJ //should be run
 OBJ
 #else //shouldnt be run

@@ -180,19 +180,31 @@ public class CodeAnalyzer {
             subLine = StringOperations.trimSpaces(subLine);
             operator = operator.substring(0, space);
         }
+        int currentIf = 1;
+        if(openIfs.size() > 0){
+            if(openIfs.contains(0)) {
+                currentIf = 0;
+            }
+        }
         switch (operator) {
             case "define":
-                defineMacro(subLine);
-                file.deleteCurrentLine();
-                file.reduceIndex();
-                break;
+                if(currentIf != 0) {
+                    defineMacro(subLine);
+                    file.deleteCurrentLine();
+                    file.reduceIndex();
+                }
+                    break;
             case "undef":
-                undefMacro(subLine);
-                file.deleteCurrentLine();
-                file.reduceIndex();
+                if(currentIf != 0) {
+                    undefMacro(subLine);
+                    file.deleteCurrentLine();
+                    file.reduceIndex();
+                }
                 break;
             case "include":
-                include(subLine);
+                if(currentIf != 0) {
+                    include(subLine);
+                }
                 break;
             case "ifdef":
                 ifDef(subLine);
@@ -212,7 +224,9 @@ public class CodeAnalyzer {
             case "endif":
                 endIf();
                 break;
-
+            default:
+                String processedLine = processCodeLine(line);
+                file.changeCurrentLine(processedLine);
         }
     }
 
@@ -506,26 +520,14 @@ public class CodeAnalyzer {
             if (blockEnd > blockComment) {
                 comment = false;
                 String check = code.substring(0, blockComment) + code.substring(blockEnd + 2);
-                return checkForStrings(check) + code.substring(blockComment, blockEnd + 2);
+                return checkForReplacements(check) + code.substring(blockComment, blockEnd + 2);
             }
-            return checkForStrings(code.substring(0, blockComment)) + processCodeLine(code.substring(blockComment));
+            return checkForReplacements(code.substring(0, blockComment)) + processCodeLine(code.substring(blockComment));
         }
-        return checkForStrings(code);
-
-    }
-
-    private String checkForStrings(String code) {
-        /*
-        int index = StringOperations.checkString(code);
-        if (index == -1) return checkForReplacements(code);
-        int end = index + 1 + StringOperations.checkString(code.substring(index + 1));
-
-        return checkForReplacements(code.substring(0, index)) + code.substring(index, end + 1) + checkForStrings(code.substring(end + 1));
-
-         */
         return checkForReplacements(code);
 
     }
+
 
     private String checkForReplacements(String code) {
         if(expandedMacros > 25) return code;
@@ -606,6 +608,12 @@ public class CodeAnalyzer {
         if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}' || prev == '=') {
             if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}'|| next == '=') {
                 code = StringOperations.replaceString(code, name, m.getBody(""));
+            }
+        }if(prev == '#'){
+            if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}'|| next == '=') {
+                String stringizedBody = "\"" + m.getBody("") + "\"";
+                String replace = code.substring(index -1, index+ name.length());
+                code = StringOperations.replaceString(code, replace, stringizedBody);
             }
         }
         return code;

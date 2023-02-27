@@ -108,7 +108,7 @@ public class StringOperations {
         if(line.equals("") || toReplace.equals("")) return line;
         int index = checkForSequence(line, toReplace);
         if(index < 0) return line;
-        return line.substring(0, index) + replacement + replaceString(line.substring(index + toReplace.length()), toReplace, replacement);
+        return line.substring(0, index) + replacement + line.substring(index + toReplace.length());
     }
 
     //retruns previous char, or ' ' if theres no previous char
@@ -129,4 +129,26 @@ public class StringOperations {
         return ' ';
     }
 
+    public static String[] joinStrings(String[] param) {
+        String[] result;
+        for (int i = 0; i < param.length; i++) {
+            int index =StringOperations.checkString(param[i]);
+            if( index >= 0){
+                if(StringOperations.checkString(param[i].substring(index +1)) == -1){
+                    result = new String[param.length-1];
+                    result[i] = param[i] + "," +param[i+1];
+                    for(int j = 0; j < result.length; j++){
+                        if(j < i){
+                            result[j] = param[j];
+                        }
+                        if(j> i){
+                            result[j] = param[j+1];
+                        }
+                    }
+                    return joinStrings(result);
+                }
+            }
+        }
+        return param;
+    }
 }

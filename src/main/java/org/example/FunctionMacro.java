@@ -22,6 +22,7 @@ public class FunctionMacro extends Macro{
             return body;
         }
         String[] param = parameter.split(",");
+        param = StringOperations.joinStrings(param);
         if(param.length != arguments.length){
             System.out.println("Parameter count missmatch");
             return body;

@@ -8,8 +8,10 @@ public class Main {
 
         System.out.println("Hello world!");
         //String filename = "src/main/resources/SQLite/sqlite-src-3400100/src/alter.c";
-        String filename = "src/main/resources/test.h";
-        String newFile = "src/main/resources/test_processed.h";
+        //String filename = "src/main/resources/test.h";
+        //String newFile = "src/main/resources/test_processed.h";
+        String filename = "src/main/resources/Parson/parson.c";
+        String newFile = "src/main/resources/Parson/edit_parson.c";
 
 
         CodeAnalyzer analyzer = new CodeAnalyzer(filename, null);

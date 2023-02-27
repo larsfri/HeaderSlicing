@@ -33,6 +33,9 @@ public class CodeAnalyzer {
 
         do {
             expandedMacros = 0;
+            if(line.contains("SIZEOF_TOKEN")){
+                String x = "break";
+            }
             this.processLine();
         } while (this.nextLine());
 
@@ -563,8 +566,6 @@ public class CodeAnalyzer {
                     if (!code.equals(oldCode)) {
                         code = checkForReplacements(code);
                     }
-
-                    break;
                 }
             }
         }
@@ -590,6 +591,7 @@ public class CodeAnalyzer {
             String expandedParameter = checkForReplacements(parameter);
 
             String[] param = expandedParameter.split(",");
+            param = StringOperations.joinStrings(param);
             if (param.length != m.countArguments()) {
                 System.out.println("Parameter missmatch for " + name);
                 return code;

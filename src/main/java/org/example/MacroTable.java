@@ -125,6 +125,7 @@ public class MacroTable {
     }
 
     public Macro checkForMacro(String name){
+        if(checkLineIgnore(name)) return null;
         for(Macro m:macros){
             if(m.getName().equals(name)){
                 return m;

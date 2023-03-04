@@ -33,7 +33,7 @@ public class CodeAnalyzer {
 
         do {
             expandedMacros = 0;
-            if(line.contains("SIZEOF_TOKEN")){
+            if(line.contains("gnu/stubs")){
                 String x = "break";
             }
             this.processLine();
@@ -227,9 +227,26 @@ public class CodeAnalyzer {
             case "endif":
                 endIf();
                 break;
+            case "exclude":
+                addExclude(subLine, true);
+                break;
+            case "ignore" :
+                addExclude(subLine, false);
+                break;
+
             default:
                 String processedLine = processCodeLine(line);
                 file.changeCurrentLine(processedLine);
+        }
+    }
+
+    private void addExclude(String name, boolean fullExclude) {
+        name = removeComments(name);
+        name = StringOperations.trimSpaces(name);
+        if(fullExclude){
+            macroTable.addExclude(name);
+        }else{
+            macroTable.addIgnore(name);
         }
     }
 

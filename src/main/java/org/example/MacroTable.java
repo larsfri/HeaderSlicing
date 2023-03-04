@@ -4,9 +4,13 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 public class MacroTable {
     private ArrayList<String> ignoreList;
+    private ArrayList<String> excludeList;
     private ArrayList<Macro> macros;
 
     private String configPath = "src/main/resources/config.txt";
@@ -15,19 +19,25 @@ public class MacroTable {
     public MacroTable(){
         macros = new ArrayList<Macro>();
         ignoreList = new ArrayList<String>();
+        excludeList = new ArrayList<String>();
         addPresetMacros();
+    }
+    public MacroTable(boolean empty){
+        macros = new ArrayList<Macro>();
+        ignoreList = new ArrayList<String>();
+        excludeList = new ArrayList<String>();
     }
 
     private void addPresetMacros() {
-        CodeAnalyzer config = new CodeAnalyzer(configPath, this);
-        addIgnoreList(config);
+
         ArrayList<String> predefs = getPredefs();
-        updatePredef(predefs);
+        //updatePredef(predefs);
 
         CodeAnalyzer analyzer = new CodeAnalyzer(predefPath, this);
 
         macros.add(new ObjectMacro("__DATE__", getDate()));
         macros.add((new ObjectMacro("__TIME__", getTime())));
+        CodeAnalyzer config = new CodeAnalyzer(configPath, this);
     }
 
     private void updatePredef(ArrayList<String> predefs) {
@@ -45,23 +55,32 @@ public class MacroTable {
         }
     }
 
+
     private ArrayList<String> getPredefs() {
         Process process;
-        ArrayList<String> readStream = new ArrayList<String>();
+        ArrayList<String> readStr = new ArrayList<String>();
         try{
-            process = Runtime.getRuntime().exec("echo | gcc -dM -E -");
+            process = Runtime.getRuntime().exec("cpp -dM -E - < /dev/null");
+            //process = Runtime.getRuntime().exec("gcc -dM -E - < /dev/null");
+            //process = Runtime.getRuntime().exec("echo | gcc -dM -E -");
+            //process = Runtime.getRuntime().exec("touch foo.h; cpp -dM foo.h");
+            
+
+
+
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String s;
             while ((s = reader.readLine()) != null) {
-                readStream.add(s);
+                readStr.add(s);
             }
             process.destroy();
         }catch(Exception e){
             throw new RuntimeException(e);
         }
-        return readStream;
+        return readStr;
     }
+/* old code not used anymore
 
     private void addIgnoreList(CodeAnalyzer config) {
         File configFile = config.getFile();
@@ -74,6 +93,8 @@ public class MacroTable {
         }
 
     }
+
+ */
 
     private String getTime() {
         LocalTime time = java.time.LocalTime.now();
@@ -144,6 +165,10 @@ public class MacroTable {
         if(ignoreList.contains(name)) return true;
         return false;
     }
+    public boolean checkExclude(String name) {
+        if(excludeList.contains(name)) return true;
+        return false;
+    }
     public boolean checkLineIgnore(String line){
         for(String name: ignoreList){
             if(line.contains(name)){
@@ -151,5 +176,28 @@ public class MacroTable {
             }
         }
         return false;
+    }
+    public boolean checkLineExclude(String line){
+        for(String name: excludeList){
+            if(line.contains(name)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public ArrayList<String> getAllMacroNames(){
+        ArrayList<String> names = new ArrayList<String>();
+        for (Macro m:
+             macros) {
+            names.add(m.getName());
+        }
+        names.addAll(excludeList);
+        return names;
+    }
+    public void addExclude(String s){
+        excludeList.add(s);
+    }
+    public void addIgnore(String s){
+        ignoreList.add(s);
     }
 }

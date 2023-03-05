@@ -30,71 +30,47 @@ public class MacroTable {
 
     private void addPresetMacros() {
 
-        ArrayList<String> predefs = getPredefs();
-        //updatePredef(predefs);
-
+        updatePredefs();
         CodeAnalyzer analyzer = new CodeAnalyzer(predefPath, this);
+        CodeAnalyzer config = new CodeAnalyzer(configPath, this);
+
+        printStatus();
 
         macros.add(new ObjectMacro("__DATE__", getDate()));
         macros.add((new ObjectMacro("__TIME__", getTime())));
-        CodeAnalyzer config = new CodeAnalyzer(configPath, this);
+
     }
 
-    private void updatePredef(ArrayList<String> predefs) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(predefPath));
-
-            for (String line: predefs) {
-                writer.write(line);
-                writer.newLine();
-            }
-
-            writer.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private void printStatus() {
+        System.out.println("There are "+ macros.size() +" Macros defined");
+        for (String exc:
+             excludeList) {
+            System.out.println(exc +" is completely excluded from processing");
+        }
+        for (String ign:
+                ignoreList) {
+            System.out.println("Conditionals containing" + ign + " are skipped, but Macros defined within are not");
         }
     }
 
-
-    private ArrayList<String> getPredefs() {
+    private void updatePredefs() {
         Process process;
         ArrayList<String> readStr = new ArrayList<String>();
         try{
-            process = Runtime.getRuntime().exec("cpp -dM -E - < /dev/null");
+            //process = Runtime.getRuntime().exec("cpp -dM -E - < /dev/null");
             //process = Runtime.getRuntime().exec("gcc -dM -E - < /dev/null");
             //process = Runtime.getRuntime().exec("echo | gcc -dM -E -");
             //process = Runtime.getRuntime().exec("touch foo.h; cpp -dM foo.h");
-            
 
-
-
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String s;
-            while ((s = reader.readLine()) != null) {
-                readStr.add(s);
-            }
+            process = Runtime.getRuntime().exec("src/main/resources/updatePredef.bat");
+            //process = Runtime.getRuntime().exec("pwd");
+            process.waitFor();
             process.destroy();
+            System.out.println("Predefined Macros updated");
         }catch(Exception e){
             throw new RuntimeException(e);
         }
-        return readStr;
     }
-/* old code not used anymore
-
-    private void addIgnoreList(CodeAnalyzer config) {
-        File configFile = config.getFile();
-        configFile.setLineIndex(0);
-        String name = configFile.getCurrentLine();
-        if(name.equals("")) name = configFile.getNextLine();
-        while (name != null){
-            ignoreList.add(name);
-            name = configFile.getNextLine();
-        }
-
-    }
-
- */
 
     private String getTime() {
         LocalTime time = java.time.LocalTime.now();

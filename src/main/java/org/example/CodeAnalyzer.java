@@ -142,6 +142,10 @@ public class CodeAnalyzer {
             falseIf = openIfs.size();
             return;
         }
+        if (checkExclude(code)) {
+            openIfs.remove(lastIf);
+            openIfs.add(2);
+        }
         if (checkIgnore(code)) {
             openIfs.remove(lastIf);
             openIfs.add(0);
@@ -155,6 +159,12 @@ public class CodeAnalyzer {
             openIfs.add(-1);
             falseIf = openIfs.size();
         }
+    }
+
+    private boolean checkExclude(String code) {
+        code = removeComments(code);
+        code = StringOperations.trimSpaces(code);
+        return macroTable.checkExclude(code);
     }
 
     private boolean checkIgnore(String code) {
@@ -188,25 +198,37 @@ public class CodeAnalyzer {
             if(openIfs.contains(0)) {
                 currentIf = 0;
             }
+            if(openIfs.contains(2)){
+                currentIf = 2;
+            }
         }
         switch (operator) {
             case "define":
-                if(currentIf != 0) {
+                if(currentIf == 1) {
                     defineMacro(subLine);
                     file.deleteCurrentLine();
                     file.reduceIndex();
                 }
+                if (currentIf == 2){
+                    addExclude(subLine, true);
+                }
                     break;
             case "undef":
-                if(currentIf != 0) {
+                if(currentIf == 1) {
                     undefMacro(subLine);
                     file.deleteCurrentLine();
                     file.reduceIndex();
                 }
+                if (currentIf == 2){
+                addExclude(subLine, true);
+                }
                 break;
             case "include":
-                if(currentIf != 0) {
+                if(currentIf == 1) {
                     include(subLine);
+                }
+                if(currentIf == 2){
+                    excludedInclude(subLine);
                 }
                 break;
             case "ifdef":
@@ -240,9 +262,15 @@ public class CodeAnalyzer {
         }
     }
 
+
+
     private void addExclude(String name, boolean fullExclude) {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
+        int space = name.indexOf(" ");
+        if(space > -1){
+            name = name.substring(0, space);
+        }
         if(fullExclude){
             macroTable.addExclude(name);
         }else{
@@ -253,7 +281,8 @@ public class CodeAnalyzer {
     private void endIf() {
         boolean check = false;
         if (openIfs.size() > 0) {
-            if(openIfs.get(openIfs.size()-1) == 0) check = true;
+            int openIf = openIfs.get(openIfs.size()-1);
+            if( openIf == 0 || openIf == 2 ) check = true;
             openIfs.remove(openIfs.size() - 1);
         }
         if(!check) {
@@ -265,6 +294,10 @@ public class CodeAnalyzer {
     private void checkIf(String expression) {
         expression = removeComments(expression);
         expression = StringOperations.trimSpaces(expression);
+        if(macroTable.checkLineExclude(expression)){
+            openIfs.add(2);
+            return;
+        }
         if(macroTable.checkLineIgnore(expression)){
             openIfs.add(0);
             return;
@@ -328,7 +361,7 @@ public class CodeAnalyzer {
 
     private void doElse() {
         int lastIf = openIfs.get(openIfs.size() - 1);
-        if (lastIf == 0) {
+        if (lastIf == 0 || lastIf == 2) {
             //Igonre else
         }
         if (lastIf == 1) {
@@ -342,7 +375,11 @@ public class CodeAnalyzer {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         boolean ignore = macroTable.checkIgnore(name);
-        if (ignore) {
+        boolean exclude = macroTable.checkExclude(name);
+        if(exclude){
+            openIfs.add(2);
+        }
+        else if(ignore) {
             openIfs.add(0);
         } else {
             if (!checkDef(name)) {
@@ -360,7 +397,11 @@ public class CodeAnalyzer {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         boolean ignore = macroTable.checkIgnore(name);
-        if (ignore) {
+        boolean exclude = macroTable.checkExclude(name);
+        if(exclude){
+            openIfs.add(2);
+        }
+        else if (ignore) {
             openIfs.add(0);
         } else {
             if (checkDef(name)) {
@@ -382,7 +423,19 @@ public class CodeAnalyzer {
         return true;
     }
 
-    private void include(String name) {
+    private void excludedInclude(String subLine) {
+        MacroTable table = new MacroTable(false);
+        include(subLine, table);
+        ArrayList<String> names = table.getAllMacroNames();
+        for (String name:
+             names) {
+            this.macroTable.addExclude(name);
+        }
+    }
+    private void include(String name){
+        include(name, this.macroTable);
+    }
+    private void include(String name, MacroTable table) {
         int begin = name.indexOf("\"");
         boolean quote = false;
         int beg = name.indexOf("<");

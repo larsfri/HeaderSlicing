@@ -13,6 +13,9 @@ public class MacroTable {
     private ArrayList<String> excludeList;
     private ArrayList<Macro> macros;
 
+    private String filename;
+    private int line;
+
     private String configPath = "src/main/resources/config.txt";
     private String predefPath = "src/main/resources/gcc-predef.txt";
 
@@ -20,12 +23,16 @@ public class MacroTable {
         macros = new ArrayList<Macro>();
         ignoreList = new ArrayList<String>();
         excludeList = new ArrayList<String>();
+        filename = "";
+        line = 0;
         addPresetMacros();
     }
     public MacroTable(boolean empty){
         macros = new ArrayList<Macro>();
         ignoreList = new ArrayList<String>();
         excludeList = new ArrayList<String>();
+        filename = "";
+        line = 0;
     }
 
     private void addPresetMacros() {
@@ -128,8 +135,21 @@ public class MacroTable {
                 return m;
             }
         }
+        if(name.equals("__FILE__")) return getFilename();
+        if(name.equals("__LINE__"))return getLine();
         return null;
     }
+
+    private Macro getLine() {
+        Macro m = new ObjectMacro("__LINE__", ""+line);
+        return m;
+    }
+
+    private Macro getFilename() {
+        Macro m = new ObjectMacro("__FILE__", filename);
+        return m;
+    }
+
     public void removeMacro(Macro m){
         macros.remove(m);
     }
@@ -175,5 +195,12 @@ public class MacroTable {
     }
     public void addIgnore(String s){
         ignoreList.add(s);
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+    public void setLine(int line){
+        this.line = line;
     }
 }

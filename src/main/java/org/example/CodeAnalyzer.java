@@ -26,16 +26,15 @@ public class CodeAnalyzer {
         SetUp setup = new SetUp();
         includePaths = setup.getPaths();
         this.filename = filename;
+        //macroTable.setFilename(filename);
         file = new File(filename);
         line = file.getCurrentLine();
         type = checkType();
         openIfs = new ArrayList<Integer>();
 
         do {
+            //macroTable.setLine(file.getLineIndex());
             expandedMacros = 0;
-            if(line.contains("gnu/stubs")){
-                String x = "break";
-            }
             this.processLine();
         } while (this.nextLine());
 
@@ -360,7 +359,11 @@ public class CodeAnalyzer {
     }
 
     private void doElse() {
-        int lastIf = openIfs.get(openIfs.size() - 1);
+
+        int lastIf = 1;
+        if(openIfs.size() > 0){
+            lastIf = openIfs.get(openIfs.size() - 1);
+        }
         if (lastIf == 0 || lastIf == 2) {
             //Igonre else
         }
@@ -476,6 +479,7 @@ public class CodeAnalyzer {
             }
         }
         if (!succes) System.out.println("Include failed: " + name);
+        macroTable.setFilename(filename);
     }
 
     private void undefMacro(String name) {

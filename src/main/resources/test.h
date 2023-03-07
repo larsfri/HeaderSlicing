@@ -1,37 +1,37 @@
 //This is a test file
 
 #define OBJ Object Macro body
-#define FUNC(X,Y,Z) Function macro Body with X,Y,Z as Params
-test #OBJ
-#OBJ
+#define FUNC3(X,Y,Z) Function macro Body with X Y and Z as Params
+//Test Macro expansion
+test #OBJ "OBJ"
+OBJ FUNC3(1,2,3) FUNC3(OBJ, FUNC3(1,2,3), OBJ) //OBJ
+//Expected Object Macro body Function mb with 1,2,3 as params func mb with object mb func mb 1,2,3 as param obj m b as param
 #ifdef OBJ //should be run
-OBJ
-#else //shouldnt be run
-fehler
+OBJ //OBJ ifdef correct
+#else //shouldn't be run
+//Error else block OBJ ifdef
 #endif
 
-#ifdef FUNC //should be run
-FUNC(Macro1,Macro2,Macro3)
+#ifdef FUNC3 //should be run
+FUNC3(1,2,3 )// FUNC3 ifdef correct
 #else //shouldnt be run
-fehler
+//Error FUNC3 ifdef
 #endif
 
-#ifdef ABC //shouldnt be run
- Fehler
+#ifdef ABC //shouldn't be run
+//Error ABC ifdef
 #else //shoul be run
-Nicht definiert!
-Test korrekt
+//else block of ABC run correctly
 #endif
 
 #include "test_include.h"
 
-#ifndef ABC
-Fehler
+#ifdef ABC
+//ABC imported Succesfully
 #else
-Import erfolgreich
+//Import ABC nicht erfolgreich
 #endif
 
-Test if
 #if 1
 Success easy test
 #else

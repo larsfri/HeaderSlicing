@@ -49,7 +49,7 @@ public class MacroTable {
     }
 
     private void printStatus() {
-        System.out.println("There are "+ macros.size() +" Macros defined");
+        System.out.println("There are "+ macros.size() +" Macros predefined");
         for (String exc:
              excludeList) {
             System.out.println(exc +" is completely excluded from processing");
@@ -73,7 +73,6 @@ public class MacroTable {
             //process = Runtime.getRuntime().exec("pwd");
             process.waitFor();
             process.destroy();
-            System.out.println("Predefined Macros updated");
         }catch(Exception e){
             throw new RuntimeException(e);
         }

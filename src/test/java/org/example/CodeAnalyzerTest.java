@@ -80,6 +80,41 @@ class CodeAnalyzerTest {
         }catch(Exception e){
             e.printStackTrace();
         }
+        analyzer.printStats();
+        analyzer.getFile();
+        analyzer.getLineIndex();
+        assertEquals(expected, out);
+    }
+    @Test
+    public void runExclude(){
+        CodeAnalyzer analyzer = new CodeAnalyzer("src/test/java/TestData/exclude.c",null);
+        String output = "src/test/java/TestData/Output/exclude.c";
+        analyzer.saveDataToFile(output);
+        String out = "failed";
+        String expected = "";
+        try {
+            out = new String(Files.readAllBytes(Paths.get(output)), StandardCharsets.UTF_8);
+            expected = new String(Files.readAllBytes(Paths.get("src/test/java/TestData/Expected/exclude.c")), StandardCharsets.UTF_8);
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        assertEquals(expected, out);
+    }
+    @Test
+    public void runIgnore(){
+        CodeAnalyzer analyzer = new CodeAnalyzer("src/test/java/TestData/ignore.c",null);
+        String output = "src/test/java/TestData/Output/ignore.c";
+        analyzer.saveDataToFile(output);
+        String out = "failed";
+        String expected = "";
+        try {
+            out = new String(Files.readAllBytes(Paths.get(output)), StandardCharsets.UTF_8);
+            expected = new String(Files.readAllBytes(Paths.get("src/test/java/TestData/Expected/ignore.c")), StandardCharsets.UTF_8);
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
         assertEquals(expected, out);
     }
 }

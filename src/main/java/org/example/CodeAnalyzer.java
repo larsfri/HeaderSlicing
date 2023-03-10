@@ -452,7 +452,7 @@ public class CodeAnalyzer {
     }
 
     private void excludedInclude(String subLine) {
-        MacroTable table = new MacroTable(false);
+        MacroTable table = new MacroTable(true);
         include(subLine, table);
         ArrayList<String> names = table.getAllMacroNames();
         for (String name:
@@ -485,7 +485,7 @@ public class CodeAnalyzer {
             int i = filename.lastIndexOf("/");
             String newfile = filename.substring(0, i + 1) + name;
             try {
-                CodeAnalyzer incl = new CodeAnalyzer(newfile, this.macroTable);
+                CodeAnalyzer incl = new CodeAnalyzer(newfile, table);
                 succes = true;
             } catch (Exception e) {
                 succes = false;
@@ -496,7 +496,7 @@ public class CodeAnalyzer {
                 searchPath = StringOperations.trimSpaces(searchPath);
                 String newfile = searchPath + "/" + name;
                 try {
-                    CodeAnalyzer incl = new CodeAnalyzer(newfile, this.macroTable);
+                    CodeAnalyzer incl = new CodeAnalyzer(newfile, table);
                     succes = true;
                 } catch (Exception e) {
                     succes = false;

@@ -68,7 +68,9 @@ public class Main {
     private static void processFile(String inputPath, String outputPath) {
         outputPath = processOutputPath(inputPath, outputPath);
         CodeAnalyzer analyzer = new CodeAnalyzer(inputPath, null);
+
         analyzer.saveDataToFile(outputPath);
+        analyzer.printStats();
     }
 
     private static String processOutputPath(String inputPath, String outputPath) {

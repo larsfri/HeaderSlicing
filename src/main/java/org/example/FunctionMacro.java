@@ -50,10 +50,4 @@ public class FunctionMacro extends Macro{
         if(arguments == null) return 0;
         return arguments.length;
     }
-
-    @Override
-    public boolean checkHashtag() {
-        if(body.contains("#")) return true;
-        return false;
-    }
 }

@@ -1,5 +1,5 @@
 //This is a test file
-
+__FILE__ __LINE__
 #define OBJ Object Macro body
 #define FUNC3(X,Y,Z) Function macro Body with X Y and Z as Params
 //Test Macro expansion
@@ -28,6 +28,7 @@ FUNC3(1,2,3 )// FUNC3 ifdef correct
 
 #ifdef ABC
 //ABC imported Succesfully
+#include "test_include.h"
 #else
 //Import ABC nicht erfolgreich
 #endif

@@ -16,6 +16,11 @@ public class CodeAnalyzer {
     private int falseIf = -1;
     private int expandedMacros;
 
+    private int counterMacroExp;
+    private int counterNotEmptyLines;
+    private int counterRemovedLines;
+    private int counterConditionals;
+
 
     public CodeAnalyzer(String filename, MacroTable macroTable) {
         if (macroTable == null) {
@@ -23,21 +28,27 @@ public class CodeAnalyzer {
         } else {
             this.macroTable = macroTable;
         }
-        SetUp setup = new SetUp();
-        includePaths = setup.getPaths();
+        macroTable = this.macroTable;
+        includePaths = macroTable.getPaths();
         this.filename = filename;
-        //macroTable.setFilename(filename);
+        macroTable.setFilename(filename);
         file = new File(filename);
         line = file.getCurrentLine();
         type = checkType();
         openIfs = new ArrayList<Integer>();
 
         do {
-            //macroTable.setLine(file.getLineIndex());
+            macroTable.setLine(file.getLineIndex());
             expandedMacros = 0;
             this.processLine();
         } while (this.nextLine());
 
+    }
+    public void printStats(){
+        System.out.println("Lines not empty before processing:  "+counterNotEmptyLines);
+        System.out.println("Lines removed during processing:  "+counterRemovedLines);
+        System.out.println("Macros resolved:  "+counterMacroExp);
+        System.out.println("Conditionals evaluated:  "+counterConditionals);
     }
 
     //gets next line returns true if line not null
@@ -67,6 +78,7 @@ public class CodeAnalyzer {
     public int processLine() {
         if (falseIf > -1) {
             checkEndIf();
+            counterRemovedLines++;
             file.deleteCurrentLine();
             file.reduceIndex();
             return 0;
@@ -78,11 +90,13 @@ public class CodeAnalyzer {
                 return 0;
             case 1:
                 //analyze Preprocessing code
+                counterNotEmptyLines++;
                 preprocessing();
                 return 1;
             case 2:
                 //check comment
                 //find macros & replace them
+                counterNotEmptyLines++;
                 String newLine = processCodeLine(this.line);
                 file.changeCurrentLine(newLine);
                 return 2;
@@ -173,6 +187,7 @@ public class CodeAnalyzer {
     }
 
     private void endFalseIf() {
+        if(openIfs.size() == 0) return;
         if (openIfs.size() == falseIf) {
             falseIf = -1;
         }
@@ -205,6 +220,7 @@ public class CodeAnalyzer {
             case "define":
                 if(currentIf == 1) {
                     defineMacro(subLine);
+                    counterRemovedLines++;
                     file.deleteCurrentLine();
                     file.reduceIndex();
                 }
@@ -215,6 +231,7 @@ public class CodeAnalyzer {
             case "undef":
                 if(currentIf == 1) {
                     undefMacro(subLine);
+                    counterRemovedLines++;
                     file.deleteCurrentLine();
                     file.reduceIndex();
                 }
@@ -285,6 +302,7 @@ public class CodeAnalyzer {
             openIfs.remove(openIfs.size() - 1);
         }
         if(!check) {
+            counterRemovedLines++;
             file.deleteCurrentLine();
             file.reduceIndex();
         }
@@ -308,6 +326,8 @@ public class CodeAnalyzer {
             openIfs.add(-1);
             falseIf = openIfs.size();
         }
+        counterConditionals++;
+        counterRemovedLines++;
         file.deleteCurrentLine();
         file.reduceIndex();
     }
@@ -369,6 +389,7 @@ public class CodeAnalyzer {
         }
         if (lastIf == 1) {
             falseIf = openIfs.size();
+            counterRemovedLines++;
             file.deleteCurrentLine();
             file.reduceIndex();
         }
@@ -391,6 +412,8 @@ public class CodeAnalyzer {
                 openIfs.add(-1);
                 falseIf = openIfs.size();
             }
+            counterConditionals++;
+            counterRemovedLines++;
             file.deleteCurrentLine();
             file.reduceIndex();
         }
@@ -413,6 +436,8 @@ public class CodeAnalyzer {
                 openIfs.add(-1);
                 falseIf = openIfs.size();
             }
+            counterConditionals++;
+            counterRemovedLines++;
             file.deleteCurrentLine();
             file.reduceIndex();
         }
@@ -638,6 +663,7 @@ public class CodeAnalyzer {
                         code = replaceFunctionMacro(code, m);
                     }
                     if (!code.equals(oldCode)) {
+                        counterMacroExp++;
                         code = checkForReplacements(code);
                     }
                 }

@@ -12,5 +12,4 @@ public abstract class Macro {
     }
     public abstract String getBody(String parameter);
     public abstract int countArguments();
-    public abstract boolean checkHashtag();
 }

@@ -16,12 +16,4 @@ public class ObjectMacro extends Macro{
     @Override
     public int countArguments(){return -1;}
 
-    @Override
-    public boolean checkHashtag(){
-        return false;
-    }
-
-
-
-
 }

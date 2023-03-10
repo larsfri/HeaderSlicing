@@ -1,0 +1,4 @@
+//Add #exclude, #include and #define directives in this file
+#exclude EXC
+#ignore IGN
+#define DEF

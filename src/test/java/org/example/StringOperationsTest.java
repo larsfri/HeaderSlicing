@@ -137,4 +137,14 @@ class StringOperationsTest {
         assertEquals(' ', a);
         assertEquals('(',b);
     }
+
+
+    @Test
+    void joinStrings() {
+        String[] strings = {"\"abc","def\"","ghi"};
+        strings = StringOperations.joinStrings(strings);
+        assertTrue(strings.length == 2);
+        assertEquals("\"abc,def\"", strings[0]);
+
+    }
 }

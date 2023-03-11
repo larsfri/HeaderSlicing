@@ -31,15 +31,6 @@ public class MacroTable {
         line = 0;
         addPresetMacros();
     }
-    public MacroTable(boolean empty){
-        macros = new ArrayList<Macro>();
-        ignoreList = new ArrayList<String>();
-        excludeList = new ArrayList<String>();
-        SetUp setup = new SetUp();
-        paths = setup.getPaths();
-        filename = "";
-        line = 0;
-    }
 
     private void addPresetMacros() {
 
@@ -190,10 +181,15 @@ public class MacroTable {
         return false;
     }
     public ArrayList<String> getAllMacroNames(){
+        boolean afterPreset = false;
         ArrayList<String> names = new ArrayList<String>();
         for (Macro m:
              macros) {
-            names.add(m.getName());
+
+            if(afterPreset)names.add(m.getName());
+
+            if(m.getName().equals("__TIME__")) afterPreset = true;
+
         }
         names.addAll(excludeList);
         return names;

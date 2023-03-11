@@ -452,7 +452,7 @@ public class CodeAnalyzer {
     }
 
     private void excludedInclude(String subLine) {
-        MacroTable table = new MacroTable(true);
+        MacroTable table = new MacroTable();
         include(subLine, table);
         ArrayList<String> names = table.getAllMacroNames();
         for (String name:

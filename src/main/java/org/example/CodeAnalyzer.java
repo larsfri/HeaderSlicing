@@ -678,17 +678,25 @@ public class CodeAnalyzer {
         int index = code.indexOf(name);
         char prev = StringOperations.previousChar(code, index);
         char next = StringOperations.nextChar(code, index + name.length() - 1);
-        if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}' || prev == '=') {
+        if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}' || prev == '=' || prev == '#') {
+            boolean stringized = false;
+            if(prev == '#') stringized = true;
             if (next != '(') {
                 //System.out.println("Function Macro without parenthesis" + name);
                 return code;
             }
             int parBeg = index + name.length();
-            int parEnd = parBeg + 1 + StringOperations.closeParenthesis(code.substring(parBeg + 1), 0);
+            int end = StringOperations.closeParenthesis(code.substring(parBeg + 1), 0);
+            if(end == -1) {
+                return code;
+            }
+            int parEnd = parBeg + 1 + end;
             String parameter = code.substring(parBeg + 1, parEnd);
             String oldMacro = code.substring(index, parEnd + 1);
+            if(stringized) oldMacro = code.substring(index-1, parEnd+1);
 
             String expandedParameter = checkForReplacements(parameter);
+            if(stringized) expandedParameter = parameter;
 
             String[] param = expandedParameter.split(",");
             param = StringOperations.joinStrings(param);
@@ -697,6 +705,10 @@ public class CodeAnalyzer {
                 return code;
             }
             String body = m.getBody(expandedParameter);
+            if(stringized){
+                body = "\""+body + "\"";
+
+            }
             code = StringOperations.replaceString(code, oldMacro, body);
         }
         return code;
@@ -724,4 +736,12 @@ public class CodeAnalyzer {
     public File getFile() {
         return this.file;
     }
+
+    public int getCounterMacroExp() { return counterMacroExp;    }
+
+    public int getCounterConditionals() {return counterConditionals;    }
+
+    public int getNotEmptyLines() {return counterNotEmptyLines;    }
+
+    public int getRemovedLines() {return counterRemovedLines;    }
 }

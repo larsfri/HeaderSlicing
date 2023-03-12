@@ -131,7 +131,7 @@ public class StringOperations {
 
     public static String[] joinStrings(String[] param) {
         String[] result;
-        for (int i = 0; i < param.length; i++) {
+        for (int i = 0; i < param.length -1; i++) {
             int index =StringOperations.checkString(param[i]);
             if( index >= 0){
                 if(StringOperations.checkString(param[i].substring(index +1)) == -1){

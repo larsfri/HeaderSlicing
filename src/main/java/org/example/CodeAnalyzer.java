@@ -60,19 +60,14 @@ public class CodeAnalyzer {
         return true;
     }
 
-    public int getLineIndex() {
-        return file.getLineIndex();
-    }
 
-    public boolean saveDataToFile(String path) {
+    public void saveDataToFile(String path) {
         try {
             file.saveDataToFile(path);
             System.out.println("Saved to " + path);
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error while saving");
-            return false;
         }
     }
 
@@ -443,9 +438,7 @@ public class CodeAnalyzer {
 
     private boolean checkDef(String name) {
         Macro m = macroTable.checkForMacro(name);
-        if (m == null) {
-            return false;
-        }
+        if (m == null) return false;
         return true;
     }
 

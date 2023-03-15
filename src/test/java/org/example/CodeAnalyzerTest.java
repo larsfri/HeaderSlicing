@@ -82,7 +82,6 @@ class CodeAnalyzerTest {
         }
         analyzer.printStats();
         analyzer.getFile();
-        analyzer.getLineIndex();
         assertEquals(expected, out);
     }
     @Test

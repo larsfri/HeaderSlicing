@@ -53,17 +53,6 @@ public class File {
         return lineIndex;
     }
 
-    public void setLineIndex(int index) {
-        this.lineIndex = index;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
 
     public void addLine(String line) {
         dataLines.add(line);
@@ -73,9 +62,6 @@ public class File {
         dataLines.clear();
     }
 
-    public void insertLineAfterIndex(String line) {
-        dataLines.add(lineIndex + 1, line);
-    }
 
     //returns current line
     public String getCurrentLine() {
@@ -102,14 +88,6 @@ public class File {
         dataLines.remove(lineIndex);
     }
 
-    //returns true if line is in bounds and was deleted
-    public boolean deleteLine(int index) {
-        if (index < dataLines.size()) {
-            dataLines.remove(index);
-            return true;
-        }
-        return false;
-    }
 
     public void saveDataToFile(String outputPath) {
         try {

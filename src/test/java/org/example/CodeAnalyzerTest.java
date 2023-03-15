@@ -20,6 +20,10 @@ class CodeAnalyzerTest {
     @Test
     public void runDefineOBJ(){
         CodeAnalyzer analyzer = new CodeAnalyzer("src/test/java/TestData/defineOBJ.c",null);
+        assertNotNull(analyzer.getCounterConditionals());
+        assertNotNull(analyzer.getNotEmptyLines());
+        assertNotNull(analyzer.getCounterMacroExp());
+        assertNotNull(analyzer.getRemovedLines());
         String output = "src/test/java/TestData/Output/defineOBJ.c";
         analyzer.saveDataToFile(output);
         String out = "failed";

@@ -735,6 +735,8 @@ public class CodeAnalyzer {
         return this.file;
     }
 
+
+    //Just for code evaluation
     public int getCounterMacroExp() {
         return counterMacroExp;
     }

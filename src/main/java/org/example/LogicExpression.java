@@ -7,7 +7,7 @@ public class LogicExpression {
     private boolean value;
     private String path = "src/main/resources/logicEXPR.c";
 
-    public LogicExpression(String expression){
+    public LogicExpression(String expression) {
         File file = new File();
         String line1 = "#if " + expression;
         file.addLine(line1);
@@ -28,7 +28,7 @@ public class LogicExpression {
 
     private boolean evaluateFile() {
         String result = processFile();
-        if(result.contains("1")){
+        if (result.contains("1")) {
             return true;
         }
         return false;
@@ -36,7 +36,7 @@ public class LogicExpression {
 
     private String processFile() {
         try {
-            Process process = Runtime.getRuntime().exec("gcc -E "+ path);
+            Process process = Runtime.getRuntime().exec("gcc -E " + path);
             String result = "0";
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String s;
@@ -46,7 +46,7 @@ public class LogicExpression {
             process.destroy();
             return result;
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return "0";

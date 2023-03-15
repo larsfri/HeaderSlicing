@@ -44,11 +44,12 @@ public class CodeAnalyzer {
         } while (this.nextLine());
 
     }
-    public void printStats(){
-        System.out.println("Lines not empty before processing:  "+counterNotEmptyLines);
-        System.out.println("Lines removed during processing:  "+counterRemovedLines);
-        System.out.println("Macros resolved:  "+counterMacroExp);
-        System.out.println("Conditionals evaluated:  "+counterConditionals);
+
+    public void printStats() {
+        System.out.println("Lines not empty before processing:  " + counterNotEmptyLines);
+        System.out.println("Lines removed during processing:  " + counterRemovedLines);
+        System.out.println("Macros resolved:  " + counterMacroExp);
+        System.out.println("Conditionals evaluated:  " + counterConditionals);
     }
 
     //gets next line returns true if line not null
@@ -131,12 +132,12 @@ public class CodeAnalyzer {
                     openIfs.add(-1);
                     break;
                 case "elif":
-                    if(falseIf  == openIfs.size()) {
+                    if (falseIf == openIfs.size()) {
                         checkElseIf(code);
                     }
                     break;
                 case "else":
-                    if(falseIf  == openIfs.size()) {
+                    if (falseIf == openIfs.size()) {
                         falseIf = -1;
                     }
             }
@@ -187,7 +188,7 @@ public class CodeAnalyzer {
     }
 
     private void endFalseIf() {
-        if(openIfs.size() == 0) return;
+        if (openIfs.size() == 0) return;
         if (openIfs.size() == falseIf) {
             falseIf = -1;
         }
@@ -208,42 +209,42 @@ public class CodeAnalyzer {
             operator = operator.substring(0, space);
         }
         int currentIf = 1;
-        if(openIfs.size() > 0){
-            if(openIfs.contains(0)) {
+        if (openIfs.size() > 0) {
+            if (openIfs.contains(0)) {
                 currentIf = 0;
             }
-            if(openIfs.contains(2)){
+            if (openIfs.contains(2)) {
                 currentIf = 2;
             }
         }
         switch (operator) {
             case "define":
-                if(currentIf == 1) {
+                if (currentIf == 1) {
                     defineMacro(subLine);
                     counterRemovedLines++;
                     file.deleteCurrentLine();
                     file.reduceIndex();
                 }
-                if (currentIf == 2){
+                if (currentIf == 2) {
                     addExclude(subLine, true);
                 }
-                    break;
+                break;
             case "undef":
-                if(currentIf == 1) {
+                if (currentIf == 1) {
                     undefMacro(subLine);
                     counterRemovedLines++;
                     file.deleteCurrentLine();
                     file.reduceIndex();
                 }
-                if (currentIf == 2){
-                addExclude(subLine, true);
+                if (currentIf == 2) {
+                    addExclude(subLine, true);
                 }
                 break;
             case "include":
-                if(currentIf == 1) {
+                if (currentIf == 1) {
                     include(subLine);
                 }
-                if(currentIf == 2){
+                if (currentIf == 2) {
                     excludedInclude(subLine);
                 }
                 break;
@@ -268,7 +269,7 @@ public class CodeAnalyzer {
             case "exclude":
                 addExclude(subLine, true);
                 break;
-            case "ignore" :
+            case "ignore":
                 addExclude(subLine, false);
                 break;
 
@@ -279,17 +280,16 @@ public class CodeAnalyzer {
     }
 
 
-
     private void addExclude(String name, boolean fullExclude) {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
         int space = name.indexOf(" ");
-        if(space > -1){
+        if (space > -1) {
             name = name.substring(0, space);
         }
-        if(fullExclude){
+        if (fullExclude) {
             macroTable.addExclude(name);
-        }else{
+        } else {
             macroTable.addIgnore(name);
         }
     }
@@ -297,11 +297,11 @@ public class CodeAnalyzer {
     private void endIf() {
         boolean check = false;
         if (openIfs.size() > 0) {
-            int openIf = openIfs.get(openIfs.size()-1);
-            if( openIf == 0 || openIf == 2 ) check = true;
+            int openIf = openIfs.get(openIfs.size() - 1);
+            if (openIf == 0 || openIf == 2) check = true;
             openIfs.remove(openIfs.size() - 1);
         }
-        if(!check) {
+        if (!check) {
             counterRemovedLines++;
             file.deleteCurrentLine();
             file.reduceIndex();
@@ -311,18 +311,18 @@ public class CodeAnalyzer {
     private void checkIf(String expression) {
         expression = removeComments(expression);
         expression = StringOperations.trimSpaces(expression);
-        if(macroTable.checkLineExclude(expression)){
+        if (macroTable.checkLineExclude(expression)) {
             openIfs.add(2);
             return;
         }
-        if(macroTable.checkLineIgnore(expression)){
+        if (macroTable.checkLineIgnore(expression)) {
             openIfs.add(0);
             return;
         }
         boolean ifTrue = checkTrue(expression);
-        if(ifTrue){
+        if (ifTrue) {
             openIfs.add(1);
-        }else {
+        } else {
             openIfs.add(-1);
             falseIf = openIfs.size();
         }
@@ -344,33 +344,33 @@ public class CodeAnalyzer {
         boolean check = false;
         int length = 7;
         int index = expression.indexOf("defined");
-        if(index >= 0){
-            index = index +7;
-            if(expression.length() > index){
+        if (index >= 0) {
+            index = index + 7;
+            if (expression.length() > index) {
 
                 String macro = expression.substring(index);
                 length = length + macro.length();
                 macro = StringOperations.trimSpaces(macro);
                 length = length - macro.length();
                 int space = macro.indexOf(" ");
-                if(space >= 0){
+                if (space >= 0) {
                     macro = macro.substring(0, space);
                 }
                 length = length + macro.length();
-                if(macro.charAt(0) == '('){
+                if (macro.charAt(0) == '(') {
                     macro = macro.substring(1);
-                    if(macro.charAt(macro.length()-1) == ')'){
-                        macro = macro.substring(0, macro.length()-1);
+                    if (macro.charAt(macro.length() - 1) == ')') {
+                        macro = macro.substring(0, macro.length() - 1);
                     }
                 }
                 Macro m = macroTable.checkForMacro(macro);
-                if(m != null) check = true;
+                if (m != null) check = true;
             }
-            String begin = expression.substring(0, index -7);
+            String begin = expression.substring(0, index - 7);
             String result = "0";
-            if(check) result = "1";
+            if (check) result = "1";
             String end = "";
-            if (expression.length() > (length +  index-7)) end = expression.substring( length + index -7);
+            if (expression.length() > (length + index - 7)) end = expression.substring(length + index - 7);
             expression = begin + result + end;
             expression = replaceDefinedOperator(expression);
         }
@@ -381,7 +381,7 @@ public class CodeAnalyzer {
     private void doElse() {
 
         int lastIf = 1;
-        if(openIfs.size() > 0){
+        if (openIfs.size() > 0) {
             lastIf = openIfs.get(openIfs.size() - 1);
         }
         if (lastIf == 0 || lastIf == 2) {
@@ -400,10 +400,9 @@ public class CodeAnalyzer {
         name = StringOperations.trimSpaces(name);
         boolean ignore = macroTable.checkIgnore(name);
         boolean exclude = macroTable.checkExclude(name);
-        if(exclude){
+        if (exclude) {
             openIfs.add(2);
-        }
-        else if(ignore) {
+        } else if (ignore) {
             openIfs.add(0);
         } else {
             if (!checkDef(name)) {
@@ -424,10 +423,9 @@ public class CodeAnalyzer {
         name = StringOperations.trimSpaces(name);
         boolean ignore = macroTable.checkIgnore(name);
         boolean exclude = macroTable.checkExclude(name);
-        if(exclude){
+        if (exclude) {
             openIfs.add(2);
-        }
-        else if (ignore) {
+        } else if (ignore) {
             openIfs.add(0);
         } else {
             if (checkDef(name)) {
@@ -455,14 +453,16 @@ public class CodeAnalyzer {
         MacroTable table = new MacroTable();
         include(subLine, table);
         ArrayList<String> names = table.getAllMacroNames();
-        for (String name:
-             names) {
+        for (String name :
+                names) {
             this.macroTable.addExclude(name);
         }
     }
-    private void include(String name){
+
+    private void include(String name) {
         include(name, this.macroTable);
     }
+
     private void include(String name, MacroTable table) {
         int begin = name.indexOf("\"");
         boolean quote = false;
@@ -632,24 +632,27 @@ public class CodeAnalyzer {
 
 
     private String checkForReplacements(String code) {
-        if(expandedMacros > 25) return code;
+        if (expandedMacros > 25) return code;
         for (Macro m : macroTable.getMacros()) {
-            if (code.contains(m.getName())) {
+
+            if (!macroTable.checkExclude(m.getName()) &&
+                    !macroTable.checkIgnore(m.getName()) &&
+                    code.contains(m.getName())) {
                 boolean inString = false;
                 int index = code.indexOf(m.getName());
                 int strBegin = StringOperations.checkString(code);
-                while(strBegin != -1) {
+                while (strBegin != -1) {
                     int strEnd = strBegin + 1 + StringOperations.checkString(code.substring(strBegin + 1));
-                    if(index > strBegin && index < strEnd){
+                    if (index > strBegin && index < strEnd) {
                         inString = true;
-                        if(code.length() >= strEnd) {
+                        if (code.length() >= strEnd) {
                             code = code.substring(0, strEnd + 1) + checkForReplacements(code.substring(strEnd + 1));
                         }
                     }
-                    int nextStr = StringOperations.checkString(code.substring(strEnd +1));
-                    if(nextStr != -1){
-                        strBegin = nextStr +1 +strEnd;
-                    }else{
+                    int nextStr = StringOperations.checkString(code.substring(strEnd + 1));
+                    if (nextStr != -1) {
+                        strBegin = nextStr + 1 + strEnd;
+                    } else {
                         strBegin = nextStr;
                     }
 
@@ -668,6 +671,7 @@ public class CodeAnalyzer {
                     }
                 }
             }
+
         }
         return code;
     }
@@ -680,23 +684,23 @@ public class CodeAnalyzer {
         char next = StringOperations.nextChar(code, index + name.length() - 1);
         if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}' || prev == '=' || prev == '#') {
             boolean stringized = false;
-            if(prev == '#') stringized = true;
+            if (prev == '#') stringized = true;
             if (next != '(') {
                 //System.out.println("Function Macro without parenthesis" + name);
                 return code;
             }
             int parBeg = index + name.length();
             int end = StringOperations.closeParenthesis(code.substring(parBeg + 1), 0);
-            if(end == -1) {
+            if (end == -1) {
                 return code;
             }
             int parEnd = parBeg + 1 + end;
             String parameter = code.substring(parBeg + 1, parEnd);
             String oldMacro = code.substring(index, parEnd + 1);
-            if(stringized) oldMacro = code.substring(index-1, parEnd+1);
+            if (stringized) oldMacro = code.substring(index - 1, parEnd + 1);
 
             String expandedParameter = checkForReplacements(parameter);
-            if(stringized) expandedParameter = parameter;
+            if (stringized) expandedParameter = parameter;
 
             String[] param = expandedParameter.split(",");
             param = StringOperations.joinStrings(param);
@@ -705,8 +709,8 @@ public class CodeAnalyzer {
                 return code;
             }
             String body = m.getBody(expandedParameter);
-            if(stringized){
-                body = "\""+body + "\"";
+            if (stringized) {
+                body = "\"" + body + "\"";
 
             }
             code = StringOperations.replaceString(code, oldMacro, body);
@@ -720,13 +724,14 @@ public class CodeAnalyzer {
         char prev = StringOperations.previousChar(code, index);
         char next = StringOperations.nextChar(code, index + name.length() - 1);
         if (prev == ' ' || prev == '(' || prev == ',' || prev == '{' || prev == '}' || prev == '=') {
-            if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}'|| next == '=') {
+            if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}' || next == '=') {
                 code = StringOperations.replaceString(code, name, m.getBody(""));
             }
-        }if(prev == '#'){
-            if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}'|| next == '=') {
+        }
+        if (prev == '#') {
+            if (next == ' ' || next == ')' || next == ',' || next == ';' || next == '{' || next == '}' || next == '=') {
                 String stringizedBody = "\"" + m.getBody("") + "\"";
-                String replace = code.substring(index -1, index+ name.length());
+                String replace = code.substring(index - 1, index + name.length());
                 code = StringOperations.replaceString(code, replace, stringizedBody);
             }
         }
@@ -737,11 +742,19 @@ public class CodeAnalyzer {
         return this.file;
     }
 
-    public int getCounterMacroExp() { return counterMacroExp;    }
+    public int getCounterMacroExp() {
+        return counterMacroExp;
+    }
 
-    public int getCounterConditionals() {return counterConditionals;    }
+    public int getCounterConditionals() {
+        return counterConditionals;
+    }
 
-    public int getNotEmptyLines() {return counterNotEmptyLines;    }
+    public int getNotEmptyLines() {
+        return counterNotEmptyLines;
+    }
 
-    public int getRemovedLines() {return counterRemovedLines;    }
+    public int getRemovedLines() {
+        return counterRemovedLines;
+    }
 }

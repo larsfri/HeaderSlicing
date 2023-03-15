@@ -8,11 +8,11 @@ import java.util.List;
 public class SetUp {
     private ArrayList<String> paths;
 
-    public SetUp(){
+    public SetUp() {
         paths = new ArrayList<String>();
         Process process;
         ArrayList<String> readStream = new ArrayList<String>();
-        try{
+        try {
             process = Runtime.getRuntime().exec("cpp -v /dev/null -o /dev/null");
             //wsl cpp -v /dev/null -o /dev/null
             //bash "cpp -v /dev/null -o /dev/null"
@@ -25,21 +25,21 @@ public class SetUp {
                 readStream.add(s);
             }
             process.destroy();
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         boolean path = false;
-        for (String line: readStream) {
-            if(line.equals("End of search list.")) path = false;
-            if(path){
+        for (String line : readStream) {
+            if (line.equals("End of search list.")) path = false;
+            if (path) {
                 paths.add(line);
             }
-            if(line.equals("#include <...> search starts here:"))path = true;
+            if (line.equals("#include <...> search starts here:")) path = true;
         }
     }
 
-    public ArrayList<String> getPaths(){
+    public ArrayList<String> getPaths() {
         return paths;
     }
 }

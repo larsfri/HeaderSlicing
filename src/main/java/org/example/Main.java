@@ -25,13 +25,13 @@ public class Main {
         String filename = "src/main/resources/Parson/parson.c";
         String newFile = "src/main/resources/Parson/edit_parson.c";
 
-        try{
+        try {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Process Directory(1) or File(2):");
             System.out.println("Enter 1/2 ");
 
             int type = scanner.nextInt();
-            while(type != 1 && type != 2){
+            while (type != 1 && type != 2) {
                 type = scanner.nextInt();
             }
             scanner.nextLine();
@@ -39,22 +39,22 @@ public class Main {
             String inputPath = scanner.nextLine();
             System.out.println("Enter the Folder for the output");
             String outputPath = scanner.nextLine();
-            if(type == 1){
+            if (type == 1) {
                 processDir(inputPath, outputPath);
             }
-            if(type == 2){
+            if (type == 2) {
                 processFile(inputPath, outputPath);
             }
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         System.out.println("Total stats for processing: ");
-        System.out.println("Lines not empty before processing:  "+counterNotEmptyLines);
-        System.out.println("Lines removed during processing:  "+counterRemovedLines);
-        System.out.println("Macros resolved:  "+counterMacroExp);
-        System.out.println("Conditionals evaluated:  "+counterConditionals);
+        System.out.println("Lines not empty before processing:  " + counterNotEmptyLines);
+        System.out.println("Lines removed during processing:  " + counterRemovedLines);
+        System.out.println("Macros resolved:  " + counterMacroExp);
+        System.out.println("Conditionals evaluated:  " + counterConditionals);
 
     }
 
@@ -70,12 +70,12 @@ public class Main {
         counterNotEmptyLines += analyzer.getNotEmptyLines();
         counterRemovedLines += analyzer.getRemovedLines();
         long duration = end - start;
-        System.out.println("File took: "+ duration +" ms to process.");
+        System.out.println("File took: " + duration + " ms to process.");
     }
 
     private static String processOutputPath(String inputPath, String outputPath) {
         int index = inputPath.lastIndexOf("/");
-        String filename = inputPath.substring(index +1);
+        String filename = inputPath.substring(index + 1);
         outputPath = StringOperations.trimSpaces(outputPath);
         return outputPath + "/" + filename;
     }
@@ -89,22 +89,20 @@ public class Main {
                     .collect(Collectors.toList());
 
             long start = System.currentTimeMillis();
-            for (Path path:
-                 paths) {
+            for (Path path :
+                    paths) {
                 String s = path.toString();
-                char last = s.charAt(s.length()-1);
-                if(last == 'c' || last == 'h') {
+                char last = s.charAt(s.length() - 1);
+                if (last == 'c' || last == 'h') {
                     System.out.println(s);
                     processFile(s, outputPath);
                 }
             }
-            long duration = System.currentTimeMillis() -start;
-            System.out.println("Total time: "+ duration+" ms");
+            long duration = System.currentTimeMillis() - start;
+            System.out.println("Total time: " + duration + " ms");
 
 
-
-
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

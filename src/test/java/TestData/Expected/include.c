@@ -1,4 +1,4 @@
 
 TRUE
-#include <stdio.h>
+#include "test_include.h"
 TRUE

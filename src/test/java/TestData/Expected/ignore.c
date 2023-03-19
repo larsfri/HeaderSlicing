@@ -1,7 +1,10 @@
 
 #ifdef IGN
 #define A
-#include <stdio.h>
+#include "test_include.h"
 #endif
 TRUE
 TRUE
+#if IGN
+//Should not be evaluated
+#endif

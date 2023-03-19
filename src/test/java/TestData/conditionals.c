@@ -20,3 +20,8 @@ TRUE
 #else
 FALSE
 #endif
+#if 0
+FALSE
+#elif 1
+TRUE
+#endif

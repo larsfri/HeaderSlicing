@@ -1,7 +1,7 @@
 #ifndef BUFSIZ
 TRUE
 #endif
-#include <stdio.h>
+#include "test_include.h"
 #ifdef BUFSIZ
 TRUE
 #else

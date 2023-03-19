@@ -489,7 +489,7 @@ public class CodeAnalyzer {
                 searchPath = StringOperations.trimSpaces(searchPath);
                 String newfile = searchPath + "/" + name;
                 try {
-                    CodeAnalyzer incl = new CodeAnalyzer(newfile, table);
+                    new CodeAnalyzer(newfile, table);
                     succes = true;
                 } catch (Exception e) {
                     succes = false;
@@ -497,6 +497,7 @@ public class CodeAnalyzer {
             }
         }
         if (!succes) System.out.println("Include failed: " + name);
+        if(succes) Main.counterIncludes++;
         macroTable.setFilename(filename);
     }
 
@@ -660,6 +661,7 @@ public class CodeAnalyzer {
                     }
                     if (!code.equals(oldCode)) {
                         counterMacroExp++;
+                        expandedMacros++;
                         code = checkForReplacements(code);
                     }
                 }
@@ -751,5 +753,9 @@ public class CodeAnalyzer {
 
     public int getRemovedLines() {
         return counterRemovedLines;
+    }
+
+    public int getDefinedMacros() {
+        return macroTable.getAllMacroNames().size();
     }
 }

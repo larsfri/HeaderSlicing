@@ -1,6 +1,6 @@
 #ifdef IGN
 #define A
-#include <stdio.h>
+#include "test_include.h"
 #endif
 #ifdef A
 FALSE
@@ -9,4 +9,7 @@ TRUE
 #endif
 #ifndef BUFSIZ
 TRUE
+#endif
+#if IGN
+//Should not be evaluated
 #endif

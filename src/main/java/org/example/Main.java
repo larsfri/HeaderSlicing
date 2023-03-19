@@ -1,6 +1,7 @@
 package org.example;
 
 import java.nio.file.Files;
+import  java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -14,17 +15,21 @@ public class Main {
     private static int counterRemovedLines;
     private static int counterConditionals;
 
+    public static int counterIncludes;
+
+    public static int counterDefinedMacros;
+
+    private static String inputDir;
+
     public static void main(String[] args) {
+        counterIncludes = 0;
+        if(args.length != 4){
+            System.out.println("Error Systanx incorrect");
+            System.out.println("Systax: .exc [-d dir| -f file] -o output");
+        }
 
 
-        System.out.println("Hello world!");
-
-        //String filename = "src/main/resources/SQLite/sqlite-src-3400100/src/alter.c";
-        //String filename = "src/main/resources/test.h";
-        //String newFile = "src/main/resources/test_processed.h";
-        String filename = "src/main/resources/Parson/parson.c";
-        String newFile = "src/main/resources/Parson/edit_parson.c";
-
+        /*
         try {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Process Directory(1) or File(2):");
@@ -49,14 +54,27 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+         */
+        inputDir = args[1];
+        makeOutputDir(args[1], args[3]);
+        if(args[0].equals("-d")){
+            processDir(args[1], args[3]);
+        }
+        if (args[0].equals("-f")){
+            processFile(args[1], args[3]);
+        }
 
         System.out.println("Total stats for processing: ");
         System.out.println("Lines not empty before processing:  " + counterNotEmptyLines);
         System.out.println("Lines removed during processing:  " + counterRemovedLines);
         System.out.println("Macros resolved:  " + counterMacroExp);
         System.out.println("Conditionals evaluated:  " + counterConditionals);
+        System.out.println("Included files:" + counterIncludes);
+        System.out.println("Defined Macros: "+counterDefinedMacros);
 
     }
+
+
 
     private static void processFile(String inputPath, String outputPath) {
         outputPath = processOutputPath(inputPath, outputPath);
@@ -69,15 +87,16 @@ public class Main {
         counterConditionals += analyzer.getCounterConditionals();
         counterNotEmptyLines += analyzer.getNotEmptyLines();
         counterRemovedLines += analyzer.getRemovedLines();
+        counterDefinedMacros += analyzer.getDefinedMacros();
         long duration = end - start;
         System.out.println("File took: " + duration + " ms to process.");
     }
 
     private static String processOutputPath(String inputPath, String outputPath) {
-        int index = inputPath.lastIndexOf("/");
-        String filename = inputPath.substring(index + 1);
+
+        String filename = inputPath.replace(inputDir, "");
         outputPath = StringOperations.trimSpaces(outputPath);
-        return outputPath + "/" + filename;
+        return outputPath + filename;
     }
 
     private static void processDir(String inputPath, String outputPath) {
@@ -92,8 +111,7 @@ public class Main {
             for (Path path :
                     paths) {
                 String s = path.toString();
-                char last = s.charAt(s.length() - 1);
-                if (last == 'c' || last == 'h') {
+                if (s.endsWith(".h") || s.endsWith(".c") || s.endsWith(".cpp") || s.endsWith(".hpp")) {
                     System.out.println(s);
                     processFile(s, outputPath);
                 }
@@ -107,5 +125,21 @@ public class Main {
         }
 
     }
+    private static void makeOutputDir(String inputPath, String outputPath) {
 
+        try {
+            File[] directories = new File(inputPath).listFiles(File::isDirectory);
+            for (File f:
+                 directories) {
+                String path = f.getAbsolutePath();
+                makeOutputDir(path, outputPath);
+                path = path.replace(inputDir, "");
+                path = outputPath +path;
+                Files.createDirectories(Paths.get(path));
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

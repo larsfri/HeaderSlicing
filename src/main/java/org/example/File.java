@@ -4,13 +4,24 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-//Handles an Array List with all Lines of the document
+/**
+ * This class handles an Array List with all Lines of the document.
+ */
 public class File {
+    /** Path to the file that is handled by this instance. */
     private String path;
+    /** Array List with all lines read from the file. */
     private ArrayList<String> dataLines = new ArrayList<String>();
+    /** Index of line that is currently being processed. */
     private int lineIndex = 0;
 
-    //new org.example.File is read from Filename
+    /**
+     * Read a file into memory using a BufferedReader instance.
+     * This function reads a file into memory by putting each line into a string.
+     * As a first post-processing, long lines split by backslash are merged again.
+     * The result is an ArrayList that is used by further operations of the class.
+     * @param path Path to file to read into memory.
+     */
     public File(String path) {
         this.path = path;
         try {
@@ -27,11 +38,16 @@ public class File {
         }
     }
 
+    /**
+     * Default constructor that initialised an empty instance without a path.
+     */
     public File() {
         path = "";
     }
 
-    //Merges lines separated by backslashs, last line isn't checked
+    /**
+     * Merge lines that are split by backslash into a single (long) line.
+     */
     private void mergeContinuedLines() {
         if (dataLines != null) {
             for (int i = 0; i < dataLines.size() - 1; i++) {
@@ -49,26 +65,42 @@ public class File {
         }
     }
 
+    /**
+     * Return line index.
+     * @return Index of line currently processed.
+     */
     public int getLineIndex() {
         return lineIndex;
     }
 
-
+    /**
+     * Append a line to the end of the internal Array.
+     * @param line Line to add to the Array.
+     */
     public void addLine(String line) {
         dataLines.add(line);
     }
 
+    /**
+     * Clear the internal Array of lines.
+     */
     public void clear() {
         dataLines.clear();
     }
 
-
-    //returns current line
+    /**
+     * Returns the current line, i.e. the line corresponding to the Line Index.
+     * @return Line of current line index.
+     */
     public String getCurrentLine() {
         return dataLines.get(lineIndex);
     }
 
-    //returns next line or null
+    /**
+     * Returns the line following the current line, or null for none (end of file).
+     * This function increments the Line Index by one.
+     * @return The line following the current line, or null for none.
+     */
     public String getNextLine() {
         if (lineIndex < (dataLines.size() - 1)) {
             lineIndex++;
@@ -78,17 +110,27 @@ public class File {
         }
     }
 
-    //current line is set to given string
+    /**
+     * Change the content of the current line to the given string.
+     * @param line New content of current line.
+     */
     public void changeCurrentLine(String line) {
         dataLines.set(lineIndex, line);
     }
 
-    //current line is removed
+    /**
+     * Delete the current line from the Array.
+     */
     public void deleteCurrentLine() {
         dataLines.remove(lineIndex);
     }
 
-
+    /**
+     * Store the Array to a new file.
+     * This operation stores the Array to a (new) file using a BufferedWriter.
+     * The outputPath has to be a valid path and file name, including permission to write to it.
+     * @param outputPath Full file path and name for the file to create.
+     */
     public void saveDataToFile(String outputPath) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath));
@@ -104,6 +146,10 @@ public class File {
         }
     }
 
+    /**
+     * Move back by one line.
+     * This function goes back by one line (if possible).
+     */
     public void reduceIndex() {
         if (lineIndex != 0) {
             lineIndex--;

@@ -5,9 +5,18 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class reads the list of paths from GCC.
+ */
 public class SetUp {
+    /** List of all paths. */
     private ArrayList<String> paths;
 
+    /**
+     * Constructor of SetUp class.
+     * This constructor reads the list of paths from gcc. It calls gcc via a dedicated process,
+     * and then processes the Error Stream (std::err) for the list of paths.
+     */
     public SetUp() {
         paths = new ArrayList<String>();
         Process process;
@@ -29,6 +38,7 @@ public class SetUp {
             throw new RuntimeException(e);
         }
 
+        // Search for the line that marks the start of the include paths
         boolean path = false;
         for (String line : readStream) {
             if (line.equals("End of search list.")) path = false;
@@ -39,6 +49,10 @@ public class SetUp {
         }
     }
 
+    /**
+     * Return the list of search paths.
+     * @return List of search paths.
+     */
     public ArrayList<String> getPaths() {
         return paths;
     }

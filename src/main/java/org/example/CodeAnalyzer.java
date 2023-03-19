@@ -2,26 +2,47 @@ package org.example;
 
 import java.util.ArrayList;
 
+/**
+ * This is the main class of the library, namely the Code Analzer.
+ * The Code Analyzer processes a single file, together with an initial Macro Table.
+ */
 public class CodeAnalyzer {
-
+    /** File that is being processed. */
     private File file;
+    /** File name of the file that is being processed. */
     private String filename;
+    /** Line number within the current file. */
     private String line;
+    /** Type of the line that is processed. */
     private int type;
+    /** True of line is a comment. */
     private boolean comment;
+    /** Macro table with all macros to be processed, excluded and ignored. */
     private MacroTable macroTable;
 
+    /** List of include paths. */
     private ArrayList<String> includePaths;
+    /** List of open if statements. */
     private ArrayList<Integer> openIfs;
+    /** Brief. */
     private int falseIf = -1;
+    /** Brief. */
     private int expandedMacros;
 
+    /** Number of Macro Expressions handled. */
     private int counterMacroExp;
+    /** Number of non-empty lines handled. */
     private int counterNotEmptyLines;
+    /** Number of lines removed. */
     private int counterRemovedLines;
+    /** Number of conditionals evaluated. */
     private int counterConditionals;
 
-
+    /**
+      * Constructor for Code Analyzer taking file name and macro table.
+      * @param filename Name of file to be processed.
+      * @param macroTable Initial macro table to be used as starting point.
+      */
     public CodeAnalyzer(String filename, MacroTable macroTable) {
         if (macroTable == null) {
             this.macroTable = new MacroTable();
@@ -45,6 +66,9 @@ public class CodeAnalyzer {
 
     }
 
+    /**
+      * Print statistics about the file processing on the console.
+      */
     public void printStats() {
         System.out.println("Lines not empty before processing:  " + counterNotEmptyLines);
         System.out.println("Lines removed during processing:  " + counterRemovedLines);
@@ -52,7 +76,10 @@ public class CodeAnalyzer {
         System.out.println("Conditionals evaluated:  " + counterConditionals);
     }
 
-    //gets next line returns true if line not null
+    /**
+      * Checks whether there is a next line to be processed.
+      * @return True if next line is not null, false otherwise.
+      */
     public boolean nextLine() {
         line = file.getNextLine();
         type = checkType();
@@ -60,7 +87,10 @@ public class CodeAnalyzer {
         return true;
     }
 
-
+    /**
+      * Save the processed code to file..
+      * @param path File path and name to store processed code to.
+      */
     public void saveDataToFile(String path) {
         try {
             file.saveDataToFile(path);
@@ -71,6 +101,10 @@ public class CodeAnalyzer {
         }
     }
 
+    /**
+      * Process next line in code.
+      * @return Type of line.
+      */
     public int processLine() {
         if (falseIf > -1) {
             checkEndIf();
@@ -81,17 +115,19 @@ public class CodeAnalyzer {
         }
         switch (type) {
             case -1:
+                // null lines are ignored.
                 return -1;
             case 0:
+                // emptry lines are ignored.
                 return 0;
             case 1:
-                //analyze Preprocessing code
+                // analyze Preprocessing code
                 counterNotEmptyLines++;
                 preprocessing();
                 return 1;
             case 2:
-                //check comment
-                //find macros & replace them
+                // check comment
+                // find macros & replace them
                 counterNotEmptyLines++;
                 String newLine = processCodeLine(this.line);
                 file.changeCurrentLine(newLine);
@@ -136,10 +172,7 @@ public class CodeAnalyzer {
                         falseIf = -1;
                     }
             }
-
         }
-
-
     }
 
     private void checkElseIf(String code) {
@@ -274,7 +307,6 @@ public class CodeAnalyzer {
         }
     }
 
-
     private void addExclude(String name, boolean fullExclude) {
         name = removeComments(name);
         name = StringOperations.trimSpaces(name);
@@ -332,7 +364,6 @@ public class CodeAnalyzer {
         expression = processCodeLine(expression);
         LogicExpression expr = new LogicExpression(expression);
         return expr.getValue();
-
     }
 
     private String replaceDefinedOperator(String expression) {
@@ -374,7 +405,6 @@ public class CodeAnalyzer {
     }
 
     private void doElse() {
-
         int lastIf = 1;
         if (openIfs.size() > 0) {
             lastIf = openIfs.get(openIfs.size() - 1);
@@ -510,6 +540,11 @@ public class CodeAnalyzer {
         }
     }
 
+    /**
+      * Remove comments from code.
+      * @param code Code from which to remove comments.
+      * @return Code with comments removed.
+      */
     public String removeComments(String code) {
         if (code.length() == 0) return code;
         String result = code;
@@ -538,7 +573,6 @@ public class CodeAnalyzer {
         }
         return code;
     }
-
 
     private void defineMacro(String name) {
         name = removeComments(name);
@@ -576,15 +610,15 @@ public class CodeAnalyzer {
         }
     }
 
-
-    /*
-       -1 null
-       0 empty line
-       1 pre-processor code
-       2 normal code
-        */
+    /**
+      * Identify the type of the next line to process.
+      * @return One of the following types:
+       -1 for null \r
+       0 for empty line \r
+       1 for pre-processor code \r
+       2 for normal code
+      */
     public int checkType() {
-
         if (line == null) return -1;
         if (line.equals("")) return 0;
         if (line.charAt(0) == '#') return 1;
@@ -593,6 +627,11 @@ public class CodeAnalyzer {
         return 2;
     }
 
+    /**
+      * Process a line of code.
+      * @param code Line of code to process.
+      * @return Processed line of code.
+      */
     public String processCodeLine(String code) {
         if (code.length() == 0) return code;
         String result = code;
@@ -621,9 +660,7 @@ public class CodeAnalyzer {
             return checkForReplacements(code.substring(0, blockComment)) + processCodeLine(code.substring(blockComment));
         }
         return checkForReplacements(code);
-
     }
-
 
     private String checkForReplacements(String code) {
         if (expandedMacros > 25) return code;
@@ -670,7 +707,6 @@ public class CodeAnalyzer {
         }
         return code;
     }
-
 
     private String replaceFunctionMacro(String code, Macro m) {
         String name = m.getName();
@@ -733,24 +769,42 @@ public class CodeAnalyzer {
         return code;
     }
 
+    /**
+      * Return the file processed by the Analyzer.
+      * @return File processed by the Analyzer.
+      */
     public File getFile() {
         return this.file;
     }
 
-
-    //Just for code evaluation
+    /**
+      * Return the number of macros expanded.
+      * @return Number of macros expanded.
+      */
     public int getCounterMacroExp() {
         return counterMacroExp;
     }
 
+    /**
+      * Return the number of conditionals evaluated.
+      * @return Number of conditionals evaluated.
+      */
     public int getCounterConditionals() {
         return counterConditionals;
     }
 
+    /**
+      * Return the number of non-empty lines.
+      * @return Number of non-empty lines.
+      */
     public int getNotEmptyLines() {
         return counterNotEmptyLines;
     }
 
+    /**
+      * Return the number of lines removed.
+      * @return Number of lines removed.
+      */
     public int getRemovedLines() {
         return counterRemovedLines;
     }

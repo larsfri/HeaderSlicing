@@ -623,6 +623,7 @@ public class CodeAnalyzer {
         String line = StringOperations.trimSpaces(this.line);
         if (line == null) return -1;
         if (line.equals("")) return 0;
+        if(comment) return 2;
         if (line.charAt(0) == '#') return 1;
         if (StringOperations.trimSpaces(line).equals("")) return 0;
 

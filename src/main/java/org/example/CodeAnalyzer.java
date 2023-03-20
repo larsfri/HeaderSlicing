@@ -224,6 +224,7 @@ public class CodeAnalyzer {
     }
 
     private void preprocessing() {
+        line = StringOperations.trimSpaces(line);
         while (line.contains("\t")) {
             line = line.replace("\t", "  ");
         }
@@ -619,6 +620,7 @@ public class CodeAnalyzer {
        2 for normal code
       */
     public int checkType() {
+        String line = StringOperations.trimSpaces(this.line);
         if (line == null) return -1;
         if (line.equals("")) return 0;
         if (line.charAt(0) == '#') return 1;

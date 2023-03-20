@@ -88,7 +88,7 @@ public class CodeAnalyzer {
     }
 
     /**
-      * Save the processed code to file..
+      * Save the processed code to file.
       * @param path File path and name to store processed code to.
       */
     public void saveDataToFile(String path) {
@@ -614,9 +614,9 @@ public class CodeAnalyzer {
     /**
       * Identify the type of the next line to process.
       * @return One of the following types:
-       -1 for null \r
-       0 for empty line \r
-       1 for pre-processor code \r
+       -1 for null <br>
+       0 for empty line <br>
+       1 for pre-processor code <br>
        2 for normal code
       */
     public int checkType() {
